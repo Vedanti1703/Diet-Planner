@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Tracker – Diet Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tracker-container { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+    .tracker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 18px; }
+    .card h2 { margin: 0 0 12px; color: #2e7d32; }
+    .form-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .form-row label { font-size: 12px; color: #444; }
+    .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 8px; border: 1.5px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; }
+    .form-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .small { font-size: 12px; color: #666; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+    th { background: #f8faf9; color: #2e7d32; position: sticky; top: 0; }
+    .table-wrap { max-height: 350px; overflow: auto; }
+    .chart-wrap { height: 320px; display: flex; align-items: center; justify-content: center; }
+    canvas { max-width: 100%; height: 300px; }
+    .tips { white-space: pre-wrap; background: #f9fff7; border: 1px solid #c8e6c9; padding: 12px; border-radius: 8px; min-height: 120px; }
+    .summary { white-space: pre-wrap; background: #f8f9ff; border: 1px solid #cfe2ff; padding: 12px; border-radius: 8px; min-height: 80px; }
+    .goals { white-space: pre-wrap; background: #fffaf4; border: 1px solid #ffe0b2; padding: 12px; border-radius: 8px; }
+    @media (max-width: 900px) { .tracker-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-title">
+      <img src="https://via.placeholder.com/50" alt="Logo">
+      <h1>Diet Planner</h1>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="summary.html">Summary</a></li>
+        <li><a href="healthtracker.html">Health Tracker</a></li>
+        <li><a href="chatbot.html">Chat Bot</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="tracker-container">
+    <div class="tracker-grid">
+      <div class="card">
+        <h2>Log Your Health Data</h2>
+        <div class="form-row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="htDate">
+          </div>
+          <div>
+            <label>Weight (kg)</label>
+            <input type="number" id="htWeight" step="0.1" placeholder="e.g., 70">
+          </div>
+          <div>
+            <label>Calories (kcal)</label>
+            <input type="number" id="htCalories" placeholder="e.g., 1800">
+          </div>
+          <div>
+            <label>Exercise (min)</label>
+            <input type="number" id="htExercise" placeholder="e.g., 30">
+          </div>
+          <div>
+            <label>Sleep (hrs)</label>
+            <input type="number" id="htSleep" step="0.1" placeholder="e.g., 7.5">
+          </div>
+          <div>
+            <label>Mood</label>
+            <select id="htMood">
+              <option value="">--</option>
+              <option>😊 Happy</option>
+              <option>😌 Calm</option>
+              <option>😐 Neutral</option>
+              <option>😴 Tired</option>
+              <option>😟 Stressed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:10px; grid-template-columns: 1fr;">
+          <div>
+            <label>Notes</label>
+            <textarea id="htNotes" rows="2" placeholder="Anything noteworthy today..."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button onclick="addHealthEntry()">Add Entry</button>
+          <button onclick="clearForm()" style="background:#6c757d">Clear</button>
+        </div>
+        <div class="small" id="htStatus"></div>
+      </div>
+
+      <div class="card">
+        <h2>Progress</h2>
+        <div class="chart-wrap">
+          <canvas id="htChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>Your Logs</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Weight</th>
+              <th>Calories</th>
+              <th>Exercise</th>
+              <th>Sleep</th>
+              <th>Mood</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="htTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>AI Progress Summary</h2>
+      <div class="summary" id="htSummary">Summaries will appear here after logging data.</div>
+      <div class="form-actions">
+        <button onclick="generateProgressSummary()">Summarize Progress</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>AI Tips</h2>
+      <div class="tips" id="htTips">Add a few days of logs to see personalized tips.</div>
+      <div class="form-actions">
+        <button onclick="generateAITips()">Get AI Feedback</button>
+      </div>
+      <div class="small">Tips generated locally. If backend AI is configured, it will be used.</div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>Smart Goals</h2>
+      <div class="goals" id="htGoals">AI goal suggestions will show here.</div>
+      <div class="form-actions">
+        <button onclick="suggestGoals()">Suggest Goals</button>
+        <button onclick="applySuggestedGoals()" style="background:#2e7d32">Apply Suggested Goals</button>
+      </div>
+      <div class="small">Uses current logs and your existing targets (e.g., calories) to propose adjustments.</div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Follow us:
+      <a href="#">Facebook</a> |
+      <a href="#">Instagram</a> |
+      <a href="#">Twitter</a>
+    </p>
+    <p>Contact: dietplanner@example.com</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    function getCurrentUser() {
+      try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
+    }
+    function userKey(prefix) {
+      const u = getCurrentUser();
+      const id = u?.id || u?.email || 'guest';
+      return `${prefix}:${id}`;
+    }
+    const STORAGE_KEY = userKey('healthLogs');
+    const API_BASE = 'http://localhost:3000';
+    let chartRef = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('htDate').valueAsDate = new Date();
+      await syncFromServer();
+      renderTable();
+      renderChart();
+      autoGenerateInsights();
+    });
+
+    function getLogs() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      try { return raw ? JSON.parse(raw) : []; } catch { return []; }
+    }
+
+    function setLogs(logs) { localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); }
+
+    async function syncFromServer() {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/health-logs`, { headers: { 'Authorization': 'Bearer ' + token } });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.logs)) setLogs(data.logs);
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    function clearForm() {
+      document.getElementById('htWeight').value = '';
+      document.getElementById('htCalories').value = '';
+      document.getElementById('htExercise').value = '';
+      document.getElementById('htSleep').value = '';
+      document.getElementById('htMood').value = '';
+      document.getElementById('htNotes').value = '';
+    }
+
+    async function addHealthEntry() {
+      const date = document.getElementById('htDate').value;
+      const weight = parseFloat(document.getElementById('htWeight').value);
+      const calories = parseInt(document.getElementById('htCalories').value);
+      const exercise = parseInt(document.getElementById('htExercise').value);
+      const sleep = parseFloat(document.getElementById('htSleep').value);
+      const mood = document.getElementById('htMood').value;
+      const notes = document.getElementById('htNotes').value.trim();
+
+      if (!date || isNaN(weight)) {
+        setStatus('Please provide at least date and weight.');
+        return;
+      }
+
+      const entry = { id: crypto.randomUUID(), date, weight, calories: isNaN(calories)? null : calories, exercise: isNaN(exercise)? null : exercise, sleep: isNaN(sleep)? null : sleep, mood, notes };
+      const logs = getLogs();
+      // Replace existing entry for same date or push
+      const idx = logs.findIndex(l => l.date === date);
+      if (idx >= 0) logs[idx] = entry; else logs.push(entry);
+      // Sort by date ascending
+      logs.sort((a,b) => new Date(a.date) - new Date(b.date));
+      setLogs(logs);
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          await fetch(`${API_BASE}/api/health-logs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(entry)
+          });
+        } catch (e) { /* ignore */ }
+      }
+      renderTable();
+      renderChart();
+      autoGenerateInsights();
+      clearForm();
+      setStatus('Entry saved.');
+    }
+
+    async function deleteEntry(id) {
+      const logs = getLogs().filter(l => l.id !== id);
+      setLogs(logs);
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          await fetch(`${API_BASE}/api/health-logs/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+        } catch (e) { /* ignore */ }
+      }
+      renderTable();
+      renderChart();
+      autoGenerateInsights();
+      setStatus('Entry deleted.');
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('htTableBody');
+      const logs = getLogs();
+      if (!logs.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="small">No entries yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td>${l.date}</td>
+          <td>${l.weight ?? ''}</td>
+          <td>${l.calories ?? ''}</td>
+          <td>${l.exercise ?? ''}</td>
+          <td>${l.sleep ?? ''}</td>
+          <td>${l.mood ?? ''}</td>
+          <td><button style="background:#dc3545" onclick="deleteEntry('${l.id}')">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById('htChart');
+      const logs = getLogs();
+      const labels = logs.map(l => l.date);
+      const weights = logs.map(l => l.weight);
+      if (chartRef) { chartRef.destroy(); }
+      chartRef = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ label: 'Weight (kg)', data: weights, borderColor: '#4caf50', backgroundColor: 'rgba(76, 175, 80, 0.15)', fill: true, tension: 0.3, pointRadius: 3 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: false } } }
+      });
+    }
+
+    async function generateAITips() {
+      const tipsEl = document.getElementById('htTips');
+      const logs = getLogs();
+      if (logs.length < 2) {
+        tipsEl.textContent = 'Add at least two entries to analyze trends.';
+        return;
+      }
+      tipsEl.textContent = 'Analyzing your recent logs...';
+
+      // Try backend first if available
+      try {
+        const res = await fetch(`${API_BASE}/ai/health-tips`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logs: logs.slice(-7) }) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.tips) { tipsEl.textContent = data.tips; return; }
+        }
+      } catch (e) { /* fall back */ }
+
+      // Local simple heuristic fallback
+      const recent = logs.slice(-7);
+      const weightDelta = recent.length >= 2 ? (recent[recent.length-1].weight - recent[0].weight) : 0;
+      const avgCalories = avg(recent.map(r => r.calories).filter(v => typeof v === 'number'));
+      const avgSleep = avg(recent.map(r => r.sleep).filter(v => typeof v === 'number'));
+      const avgExercise = avg(recent.map(r => r.exercise).filter(v => typeof v === 'number'));
+
+      const calorieLimit = parseInt(localStorage.getItem(userKey('calorieLimit')) || localStorage.getItem('calorieLimit') || '0');
+      const parts = [];
+      parts.push(`Weight change over period: ${fmtDelta(weightDelta)}.`);
+      if (avgCalories) {
+        parts.push(`Average calories: ${Math.round(avgCalories)}${calorieLimit ? ` (target: ${calorieLimit})` : ''}.`);
+        if (calorieLimit && avgCalories > calorieLimit + 150) parts.push('Tip: Consider reducing portion sizes or increasing activity slightly.');
+        if (calorieLimit && avgCalories < calorieLimit - 150) parts.push('Tip: You may be under-eating; ensure adequate protein and nutrients.');
+      }
+      if (avgSleep) {
+        if (avgSleep < 7) parts.push('Aim for at least 7 hours of sleep to support recovery.');
+        else parts.push('Great job maintaining healthy sleep duration.');
+      }
+      if (avgExercise) {
+        if (avgExercise < 90) parts.push('Try to reach 150 minutes of moderate exercise per week.');
+        else parts.push('Nice consistency with your activity levels!');
+      }
+      const moods = recent.map(r => r.mood).filter(Boolean);
+      if (moods.length) {
+        const negative = moods.filter(m => /Tired|Stressed/.test(m)).length;
+        if (negative / moods.length > 0.5) parts.push('Frequent tired/stressed moods detected: consider deload weeks, mindfulness, or lighter meals.');
+      }
+      tipsEl.textContent = parts.join('\n');
+    }
+
+    function avg(arr) { if (!arr.length) return null; return arr.reduce((a,b) => a+b, 0) / arr.length; }
+    function fmtDelta(d) { if (!d) return '0.0 kg'; const sign = d > 0 ? '+' : ''; return `${sign}${d.toFixed(1)} kg`; }
+    function setStatus(msg) { document.getElementById('htStatus').textContent = msg; setTimeout(() => { document.getElementById('htStatus').textContent = ''; }, 2500); }
+
+    async function generateProgressSummary() {
+      const el = document.getElementById('htSummary');
+      const logs = getLogs();
+      if (logs.length < 2) { el.textContent = 'Add at least two entries to summarize progress.'; return; }
+      el.textContent = 'Summarizing your progress...';
+
+      // Backend LLM attempt
+      try {
+        const res = await fetch(`${API_BASE}/ai/progress-summary`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logs: logs.slice(-30), bmiBaseline: getBMIParams() }) });
+        if (res.ok) { const data = await res.json(); if (data && data.summary) { el.textContent = data.summary; return; } }
+      } catch (e) { /* fallback */ }
+
+      // Local fallback: compute simple summary
+      const recent = logs.slice(-30);
+      const start = recent[0];
+      const end = recent[recent.length - 1];
+      const weightDelta = end.weight - start.weight;
+      const bmiParams = getBMIParams();
+      let bmiText = '';
+      if (bmiParams) {
+        const bmiStart = calcBMI(start.weight, bmiParams.heightCm);
+        const bmiEnd = calcBMI(end.weight, bmiParams.heightCm);
+        const bmiChangePct = bmiStart ? ((bmiEnd - bmiStart) / bmiStart) * 100 : 0;
+        bmiText = `BMI: ${bmiStart.toFixed(1)} → ${bmiEnd.toFixed(1)} (${bmiChangePct >= 0 ? '+' : ''}${bmiChangePct.toFixed(1)}%).`;
+      }
+      el.textContent = `From ${start.date} to ${end.date}: weight ${fmtDelta(weightDelta)}. ${bmiText}`.trim();
+    }
+
+    async function suggestGoals() {
+      const el = document.getElementById('htGoals');
+      const logs = getLogs();
+      if (!logs.length) { el.textContent = 'Add some logs to get goal suggestions.'; return; }
+      el.textContent = 'Analyzing and suggesting goals...';
+
+      const payload = { logs: logs.slice(-30), targets: { calories: parseInt(localStorage.getItem('calorieLimit') || '0'), goalWeight: parseFloat(localStorage.getItem('goal') || '0') } };
+      try {
+        const res = await fetch(`${API_BASE}/ai/goal-suggestions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (res.ok) { const data = await res.json(); if (data && data.goals) { el.textContent = data.goals; return; } }
+      } catch (e) { /* fallback */ }
+
+      // Local fallback goal logic
+      const recent = logs.slice(-14);
+      const calorieTarget = parseInt(localStorage.getItem('calorieLimit') || '0') || null;
+      const goalWeight = parseFloat(localStorage.getItem('goal') || '0') || null;
+      const parts = [];
+      if (goalWeight) {
+        const last = recent[recent.length - 1] || logs[logs.length - 1];
+        const remaining = goalWeight - last.weight;
+        parts.push(`Target weight: ${goalWeight} kg (remaining ${fmtDelta(remaining)}).`);
+      }
+      const avgCalories = avg(recent.map(r => r.calories).filter(v => typeof v === 'number'));
+      if (calorieTarget && avgCalories) {
+        const adj = avgCalories > calorieTarget ? -100 : (avgCalories < calorieTarget - 150 ? +100 : 0);
+        if (adj !== 0) parts.push(`Proposed daily calorie adjustment: ${adj > 0 ? '+' : ''}${adj} kcal.`);
+      }
+      const avgExercise = avg(recent.map(r => r.exercise).filter(v => typeof v === 'number')) || 0;
+      if (avgExercise < 150/7) parts.push('Proposed activity: aim for 25–30 min/day moderate exercise.');
+      else parts.push('Maintain current activity; consider adding 1 strength session/week.');
+      el.textContent = parts.join('\n');
+    }
+
+    function applySuggestedGoals() {
+      const text = document.getElementById('htGoals').textContent;
+      const match = text.match(/Proposed daily calorie adjustment: ([+\-]?\d+) kcal/);
+      const current = parseInt(localStorage.getItem('calorieLimit') || '0');
+      if (match && current) {
+        const adj = parseInt(match[1]);
+        const updated = current + adj;
+        localStorage.setItem('calorieLimit', String(updated));
+        setStatus(`Updated calorie target to ${updated} kcal.`);
+        autoGenerateInsights();
+      } else {
+        setStatus('No applicable calorie adjustment found.');
+      }
+    }
+
+    function autoGenerateInsights() {
+      // Automatically refresh summaries and goals when logs change
+      generateProgressSummary();
+      // Do not auto-call AI tips to avoid frequent requests; user can click.
+    }
+
+    function getBMIParams() {
+      const heightCm = parseFloat(localStorage.getItem(userKey('heightCm')) || localStorage.getItem('heightCm') || '0') || null;
+      if (!heightCm) return null; return { heightCm };
+    }
+    function calcBMI(weightKg, heightCm) { if (!weightKg || !heightCm) return null; const m = heightCm / 100; return weightKg / (m * m); }
+  </script>
+</body>
+</html>
+
