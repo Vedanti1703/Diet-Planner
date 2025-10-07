@@ -254,6 +254,16 @@
     const currentUserSection = document.getElementById('currentUserSection');
     const currentUserName = document.getElementById('currentUserName');
 
+    // Persist the entered email locally (never store passwords!)
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+      emailInput.addEventListener('input', (e) => {
+        try {
+          localStorage.setItem('lastLoginEmail', e.target.value.trim());
+        } catch (_) {}
+      });
+    }
+
     // Check if user is already logged in and show options
     function checkCurrentUser() {
       const authToken = localStorage.getItem('authToken');
@@ -345,6 +355,9 @@
       
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+
+      // Save the email locally so it's prefilled next time
+      try { localStorage.setItem('lastLoginEmail', email); } catch (_) {}
       
       let isValid = true;
       
@@ -381,6 +394,7 @@
           // Success - save token and user info
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          try { localStorage.setItem('lastLoginAt', new Date().toISOString()); } catch (_) {}
           
           // Update greeting if possible
           setTimeout(() => {
@@ -429,6 +443,13 @@
     window.addEventListener('load', () => {
       // Check if user is already logged in
       if (!checkCurrentUser()) {
+        // Prefill saved email if available
+        try {
+          const savedEmail = localStorage.getItem('lastLoginEmail');
+          if (savedEmail) {
+            document.getElementById('email').value = savedEmail;
+          }
+        } catch (_) {}
         // No user logged in, focus on email input
         document.getElementById('email').focus();
         
