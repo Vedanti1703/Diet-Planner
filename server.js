@@ -6,10 +6,17 @@ const fs = require('fs');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+let OpenAIClient = null;
+try {
+  OpenAIClient = require('openai');
+} catch (e) {
+  // openai package not installed or failed to load; we'll fallback
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.JWT_SECRET || 'diet_planner_secret_2024';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_API_TOKEN || '';
 
 // Middleware
 app.use(cors());
@@ -104,6 +111,78 @@ function mergeDietPrefs(existing, incoming) {
 // Health check
 app.get('/', (req, res) => {
   res.json({ message: 'Diet Planner Backend Running' });
+});
+
+// AI Chat endpoint (no auth required, optional)
+app.post('/ai/chat', async (req, res) => {
+  try {
+    const { message, history = [] } = req.body || {};
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'message is required' });
+    }
+
+    // Local fallback responder for when OpenAI is not configured
+    const localResponder = (text) => {
+      const q = String(text).toLowerCase();
+      if (/hello|hi|hey/.test(q)) return 'Hi! How can I help with diets, nutrition, or fitness?';
+      if (/bmi|body\s*mass\s*index/.test(q)) return 'BMI = weight(kg) / (height(m)^2). Aim for 18.5–24.9.';
+      if (/calorie|calories/.test(q)) return 'Calories depend on age, sex, height, weight, activity. Start with your target and adjust ±100–200 kcal based on weekly progress.';
+      if (/protein/.test(q)) return 'Aim ~1.2–2.2 g protein per kg body weight daily depending on goals.';
+      if (/keto/.test(q)) return 'Keto is low‑carb, high‑fat. Focus on eggs, meat/fish, cheese, non‑starchy veg.';
+      if (/vegan/.test(q)) return 'Vegan excludes animal products. Emphasize legumes, tofu/tempeh, whole grains, nuts/seeds; supplement B12.';
+      if (/gluten[- ]?free|gluten/.test(q)) return 'Gluten‑free is crucial for celiac/sensitivity; not inherently healthier otherwise.';
+      if (/lose\s*weight|weight\s*loss/.test(q)) return 'For weight loss: modest deficit, high protein/fiber, 2–3x/week strength training, 7–8h sleep, daily steps.';
+      return "I can help with diets, calories, meals, and fitness. Try: 'How many calories should I eat to lose weight?'";
+    };
+
+    // Try OpenAI if configured
+    if (OpenAIClient && OPENAI_API_KEY) {
+      try {
+        const client = new OpenAIClient({ apiKey: OPENAI_API_KEY });
+        // Map history into Chat Completions format if provided
+        const messages = [];
+        if (Array.isArray(history)) {
+          for (const h of history.slice(-10)) {
+            if (h && typeof h.content === 'string' && (h.role === 'user' || h.role === 'assistant')) {
+              messages.push({ role: h.role, content: h.content });
+            }
+          }
+        }
+        messages.unshift({ role: 'system', content: 'You are a helpful nutrition and diet planning assistant for a Diet Planner app. Be concise and practical.' });
+        messages.push({ role: 'user', content: message });
+
+        // Use chat.completions if available in version installed
+        let replyText = '';
+        if (client.chat && client.chat.completions && client.chat.completions.create) {
+          const completion = await client.chat.completions.create({
+            model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+            messages
+          });
+          replyText = completion.choices?.[0]?.message?.content?.trim() || '';
+        } else if (client.responses && client.responses.create) {
+          // New Responses API fallback
+          const resp = await client.responses.create({
+            model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+            input: messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n')
+          });
+          replyText = resp.output_text?.trim?.() || resp.output?.[0]?.content?.[0]?.text || '';
+        }
+
+        if (replyText) {
+          return res.json({ reply: replyText });
+        }
+        // If no reply, fall through to local
+      } catch (e) {
+        console.warn('OpenAI chat failed, using local fallback:', e.message || e);
+      }
+    }
+
+    // Fallback
+    return res.json({ reply: localResponder(message) });
+  } catch (err) {
+    console.error('AI chat error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // User signup
