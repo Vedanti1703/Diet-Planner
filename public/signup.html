@@ -273,6 +273,38 @@
     const currentUserSection = document.getElementById('currentUserSection');
     const currentUserName = document.getElementById('currentUserName');
 
+    // Keys for local signup persistence (never store passwords!)
+    const SIGNUP_KEYS = {
+      name: 'signup_name',
+      dob: 'signup_dob',
+      email: 'signup_email',
+      lastAt: 'lastSignupAt'
+    };
+
+    // Prefill from localStorage on load
+    (function prefillSignupFields() {
+      try {
+        const savedName = localStorage.getItem(SIGNUP_KEYS.name);
+        const savedDob = localStorage.getItem(SIGNUP_KEYS.dob);
+        const savedEmail = localStorage.getItem(SIGNUP_KEYS.email);
+        if (savedName) document.getElementById('name').value = savedName;
+        if (savedDob) document.getElementById('dob').value = savedDob;
+        if (savedEmail) document.getElementById('email').value = savedEmail;
+      } catch (_) {}
+    })();
+
+    // Save changes as user types (debounced light)
+    function persistField(id, key) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', (e) => {
+        try { localStorage.setItem(key, e.target.value.trim()); } catch (_) {}
+      });
+    }
+    persistField('name', SIGNUP_KEYS.name);
+    persistField('dob', SIGNUP_KEYS.dob);
+    persistField('email', SIGNUP_KEYS.email);
+
     // Check if user is already logged in and show options
     function checkCurrentUser() {
       const authToken = localStorage.getItem('authToken');
@@ -327,6 +359,12 @@
       localStorage.removeItem('goalWeight');
       localStorage.removeItem('calorieLimit');
       localStorage.removeItem('tempDiet');
+      // Also clear any persisted signup fields
+      try {
+        localStorage.removeItem(SIGNUP_KEYS.name);
+        localStorage.removeItem(SIGNUP_KEYS.dob);
+        localStorage.removeItem(SIGNUP_KEYS.email);
+      } catch (_) {}
       
       // Hide current user section and show signup form
       currentUserSection.style.display = 'none';
@@ -415,12 +453,22 @@
           body: JSON.stringify({ name, email, password, dob })
         });
         
-        const data = await response.json();
+        // Parse response safely (handle empty/non-JSON)
+        let data;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = {};
+        }
         
         if (response.ok) {
           // Success - save token and user info
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
+          try {
+            localStorage.setItem(SIGNUP_KEYS.lastAt, new Date().toISOString());
+            localStorage.setItem('lastSignupEmail', data?.user?.email || email);
+          } catch (_) {}
           
           successMsg.textContent = `✅ Welcome ${data.user.name}! Account created successfully!`;
           successMsg.style.display = 'block';
