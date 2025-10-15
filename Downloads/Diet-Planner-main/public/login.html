@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Diet Planner</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #e8f0fe;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .form-container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      width: 380px;
+      max-width: 90%;
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4caf50;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    .error {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .success {
+      color: #27ae60;
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 10px 0;
+      padding: 10px;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 5px;
+    }
+
+    .info {
+      color: #2e7d32;
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 15px 0;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .secondary-btn {
+      background-color: #ff9800;
+      margin-top: 5px;
+    }
+
+    .secondary-btn:hover:not(:disabled) {
+      background-color: #f57c00;
+    }
+
+    .danger-btn {
+      background-color: #e74c3c;
+      margin-top: 5px;
+    }
+
+    .danger-btn:hover:not(:disabled) {
+      background-color: #c0392b;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #4caf50;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+      color: #666;
+    }
+
+    .loading::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #4caf50;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .current-user-section {
+      display: none;
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+    }
+
+    .current-user-name {
+      font-weight: bold;
+      color: #856404;
+      margin-bottom: 10px;
+    }
+
+    .switch-account-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .switch-account-buttons button {
+      width: auto;
+      padding: 8px 16px;
+      margin: 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>🍽️ Login</h2>
+    
+    <!-- Current User Section -->
+    <div class="current-user-section" id="currentUserSection">
+      <div class="current-user-name" id="currentUserName">Currently logged in as: User</div>
+      <div style="margin-bottom: 10px; color: #856404; font-size: 14px;">
+        What would you like to do?
+      </div>
+      <div class="switch-account-buttons">
+        <button type="button" class="secondary-btn" onclick="continueAsCurrentUser()">
+          Continue as Current User
+        </button>
+        <button type="button" class="danger-btn" onclick="switchAccount()">
+          Switch Account
+        </button>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">Signing you in...</div>
+    <div class="success" id="successMsg" style="display: none;"></div>
+    <div class="info" id="infoMsg" style="display: none;"></div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" required>
+        <span class="error" id="emailError"></span>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+        <span class="error" id="passwordError"></span>
+      </div>
+      
+      <button type="submit" id="loginBtn">Login</button>
+    </form>
+    
+    <div class="footer">
+      Don't have an account? <a href="signup.html">Create one</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loading = document.getElementById('loading');
+    const successMsg = document.getElementById('successMsg');
+    const infoMsg = document.getElementById('infoMsg');
+    const currentUserSection = document.getElementById('currentUserSection');
+    const currentUserName = document.getElementById('currentUserName');
+
+    // Persist the entered email locally (never store passwords!)
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+      emailInput.addEventListener('input', (e) => {
+        try {
+          localStorage.setItem('lastLoginEmail', e.target.value.trim());
+        } catch (_) {}
+      });
+    }
+
+    // Check if user is already logged in and show options
+    function checkCurrentUser() {
+      const authToken = localStorage.getItem('authToken');
+      const userInfo = localStorage.getItem('user');
+      
+      if (authToken && userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          const userName = user.name || 'User';
+          
+          // Show current user section
+          currentUserName.textContent = `Currently logged in as: ${userName}`;
+          currentUserSection.style.display = 'block';
+          loginForm.style.display = 'none';
+          
+          infoMsg.innerHTML = `<strong>Hi ${userName}!</strong><br>You're already logged in. Choose an option below.`;
+          infoMsg.style.display = 'block';
+          infoMsg.style.background = '#fff3cd';
+          infoMsg.style.borderColor = '#ffeaa7';
+          infoMsg.style.color = '#856404';
+          
+          return true;
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          // Clear corrupted data
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        }
+      }
+      
+      return false;
+    }
+
+    // Continue as current user
+    function continueAsCurrentUser() {
+      successMsg.textContent = '✅ Continuing as current user...';
+      successMsg.style.display = 'block';
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    }
+
+    // Switch to different account
+    function switchAccount() {
+      // Clear current user data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('diet');
+      localStorage.removeItem('bmi');
+      localStorage.removeItem('goal');
+      localStorage.removeItem('goalWeight');
+      localStorage.removeItem('calorieLimit');
+      localStorage.removeItem('tempDiet');
+      
+      // Hide current user section and show login form
+      currentUserSection.style.display = 'none';
+      loginForm.style.display = 'block';
+      infoMsg.style.display = 'none';
+      
+      // Clear form
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      
+      // Show switch account message
+      infoMsg.innerHTML = '✅ <strong>Account switched!</strong><br>Please login with different credentials.';
+      infoMsg.style.display = 'block';
+      infoMsg.style.background = '#d4edda';
+      infoMsg.style.borderColor = '#c3e6cb';
+      infoMsg.style.color = '#155724';
+      
+      // Focus on email input
+      document.getElementById('email').focus();
+      
+      // Hide the message after 3 seconds
+      setTimeout(() => {
+        infoMsg.style.display = 'none';
+      }, 3000);
+    }
+
+    // Login form submission
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Clear previous messages
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+      successMsg.style.display = 'none';
+      infoMsg.style.display = 'none';
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // Save the email locally so it's prefilled next time
+      try { localStorage.setItem('lastLoginEmail', email); } catch (_) {}
+      
+      let isValid = true;
+      
+      // Basic validation
+      if (!email.includes('@') || !email.includes('.')) {
+        document.getElementById('emailError').textContent = 'Enter a valid email address.';
+        isValid = false;
+      }
+      
+      if (password.length < 6) {
+        document.getElementById('passwordError').textContent = 'Password must be at least 6 characters.';
+        isValid = false;
+      }
+      
+      if (!isValid) return;
+      
+      // Show loading
+      loading.style.display = 'block';
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Success - save token and user info
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          try { localStorage.setItem('lastLoginAt', new Date().toISOString()); } catch (_) {}
+          
+          // Update greeting if possible
+          setTimeout(() => {
+            if (window.opener && typeof window.opener.displayPersonalizedGreeting === 'function') {
+              window.opener.displayPersonalizedGreeting();
+            }
+          }, 100);
+
+          successMsg.textContent = `✅ Welcome ${data.user.name}! Login successful!`;
+          successMsg.style.display = 'block';
+          
+          // Hide form
+          loginForm.style.display = 'none';
+          
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+          
+        } else {
+          // Error from server
+          throw new Error(data.error || 'Login failed');
+        }
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        
+        // Show specific error message
+        if (error.message.includes('credentials')) {
+          document.getElementById('passwordError').textContent = 'Invalid email or password.';
+        } else if (error.message.includes('Network')) {
+          document.getElementById('emailError').textContent = 'Network error. Please check your connection.';
+        } else if (error.message.includes('fetch')) {
+          document.getElementById('emailError').textContent = 'Server not reachable. Please make sure the server is running on http://localhost:3000';
+        } else {
+          document.getElementById('emailError').textContent = error.message || 'Login failed. Please try again.';
+        }
+      } finally {
+        // Hide loading
+        loading.style.display = 'none';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+
+    // Initialize page
+    window.addEventListener('load', () => {
+      // Check if user is already logged in
+      if (!checkCurrentUser()) {
+        // Prefill saved email if available
+        try {
+          const savedEmail = localStorage.getItem('lastLoginEmail');
+          if (savedEmail) {
+            document.getElementById('email').value = savedEmail;
+          }
+        } catch (_) {}
+        // No user logged in, focus on email input
+        document.getElementById('email').focus();
+        
+        // Test server connection
+        fetch(`${API_BASE}/`, { method: 'GET' })
+          .then(response => {
+            if (!response.ok) throw new Error('Server not responding');
+            console.log('✅ Server connection OK');
+          })
+          .catch(error => {
+            console.error('⚠️ Server connection failed:', error);
+            document.getElementById('emailError').textContent = '⚠️ Server not running. Please start the server (node server.js) and refresh.';
+          });
+      }
+    });
+  </script>
+</body>
+</html>
