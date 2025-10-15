@@ -265,6 +265,47 @@
       font-weight: bold;
       text-transform: uppercase;
     }
+    .details-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin: 30px auto;
+  max-width: 1000px;
+}
+
+.details-card {
+  flex: 1;
+  min-width: 280px;
+  max-width: 420px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.details-card h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #2e7d32;
+}
+
+.details-card label {
+  font-weight: 600;
+  margin-top: 6px;
+  display: block;
+  color: #333;
+}
+
+.details-card input,
+.details-card select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
 
     /* Review Form Modal */
     .review-modal {
@@ -566,51 +607,50 @@
     </div>
 
     <div class="diet-options">
-      <!-- Diet Options -->
+      <!-- Keto -->
       <label class="diet-option">
-        <input type="radio" name="diet" value="Keto">
-        <img src="image/keto.jpg" alt="Keto Diet" class="diet-img">
+        <input type="checkbox" name="diet" value="Keto">
+        <img src="image/keto.jpg" alt="Keto Diet">
         <span>Keto</span>
         <button class="know-more">Know More</button>
         <div class="diet-info">
           <p>The Keto diet is a low-carb, high-fat diet that helps in burning fat efficiently.</p>
         </div>
       </label>
-
+      <!-- Gluten-Free -->
       <label class="diet-option">
-        <input type="radio" name="diet" value="Gluten-Free">
-        <img src="image/glutenfree.jpg" alt="Gluten-Free Diet" class="diet-img">
+        <input type="checkbox" name="diet" value="Gluten-Free">
+        <img src="image/glutenfree.jpg" alt="Gluten-Free Diet">
         <span>Gluten-Free</span>
         <button class="know-more">Know More</button>
         <div class="diet-info">
           <p>The Gluten-Free diet is suitable for people with gluten intolerance or celiac disease.</p>
         </div>
       </label>
-
+      <!-- Vegetarian -->
       <label class="diet-option">
-        <input type="radio" name="diet" value="Veg">
-        <img src="image/veg.jpg" alt="Vegetarian Diet" class="diet-img">
+        <input type="checkbox" name="diet" value="Veg">
+        <img src="image/veg.jpg" alt="Vegetarian Diet">
         <span>Vegetarian</span>
         <button class="know-more">Know More</button>
         <div class="diet-info">
-          <p>The Vegetarian diet avoids meat, poultry, and fish, focusing on vegetables, fruits,
-            grains, legumes, and dairy.</p>
+          <p>The Vegetarian diet avoids meat, poultry, and fish, focusing on vegetables, fruits, grains, legumes, and dairy.</p>
         </div>
       </label>
-
+      <!-- Vegan -->
       <label class="diet-option">
-        <input type="radio" name="diet" value="Vegan">
-        <img src="image/vegan.jpg" alt="Vegan Diet" class="diet-img">
+        <input type="checkbox" name="diet" value="Vegan">
+        <img src="image/vegan.jpg" alt="Vegan Diet">
         <span>Vegan</span>
         <button class="know-more">Know More</button>
         <div class="diet-info">
           <p>The Vegan diet excludes all animal products and focuses on plant-based foods.</p>
         </div>
       </label>
-
+      <!-- Non-Veg -->
       <label class="diet-option">
-        <input type="radio" name="diet" value="Non-Veg">
-        <img src="image/nonveg.jpg" alt="Non-Veg Diet" class="diet-img">
+        <input type="checkbox" name="diet" value="Non-Veg">
+        <img src="image/nonveg.jpg" alt="Non-Veg Diet">
         <span>Non-Veg</span>
         <button class="know-more">Know More</button>
         <div class="diet-info">
@@ -619,452 +659,338 @@
       </label>
     </div>
 
-    <div class="input-section">
-      <h2>Enter Your Details</h2>
-      <label for="height">Height (cm)</label>
-      <input type="number" id="height" placeholder="e.g., 170" oninput="updateLiveBMI()">
+<!-- Input Section -->
+<div class="details-container">
+  <!-- Left Section -->
+  <div class="details-card">
+    <h2>Your Details</h2>
+    <label for="gender">Gender</label>
+    <select id="gender">
+      <option value="">Select</option>
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
 
-      <label for="weight">Current Weight (kg)</label>
-      <input type="number" id="weight" placeholder="e.g., 70" oninput="updateLiveBMI()">
+    <label for="age">Age (years)</label>
+    <input type="number" id="age" placeholder="e.g., 25">
 
-      <label for="goal">Goal Weight (kg)</label>
-      <input type="number" id="goal" placeholder="e.g., 65">
-
-      <label for="bmiDisplay">BMI</label>
-      <input type="text" id="bmiDisplay" placeholder="BMI will appear here" readonly>
-
-      <button class="btn" onclick="calculateBMI()">Calculate BMI & Show Summary</button>
-    </div>
-
-    <!-- New Summary Section (moved before videos) -->
-    <div id="userSummary" style="margin-top:20px; display:none;">
-      <p><strong>BMI:</strong> <span id="bmiVal"></span></p>
-      <p><strong>Goal Weight (kg):</strong> <span id="goalVal"></span></p>
-      <p><strong>Diet Type:</strong> <span id="dietVal"></span></p>
-      <p><strong>Calorie Limit:</strong> <span id="calorieVal"></span> kcal/day</p>
-      <button class="btn" onclick="saveAndRedirect()">Generate Plan</button>
-    </div>
+    <label for="height">Height (cm)</label>
+    <input type="number" id="height" placeholder="e.g., 170" oninput="updateLiveBMI()">
   </div>
 
-  <div class="right">
-    <h2>Diet Tips</h2>
-    <iframe src="https://www.youtube.com/watch?v=q42n27oCOUM" title="Diet Tips"></iframe>
-    <h2>Exercise Videos</h2>
-    <iframe src="https://www.youtube.com/embed/UItWltVZZmE" title="Exercise"></iframe>
-    <h2>Healthy Recipes</h2>
-    <iframe src="https://www.youtube.com/embed/4zG4TG6AQa0" title="Recipes"></iframe>
-  </div>
-   <!-- <section id="ai-plan-section">
-  <h2>🔮 Personalized Meal Suggestions</h2>
-  <form id="aiPlanForm">
-    <label for="goals">Your Goals & Restrictions:</label>
-    <textarea id="goals" required placeholder="e.g. 1500 kcal/day, vegetarian, gluten–free"></textarea>
-    <button type="submit">Generate Meal Plan</button>
-  </form>
-  <pre id="aiPlanOutput"></pre>
-</section>-->
-  <section class="review-section">
-    <h2>Success Stories & Reviews</h2>
-    <!-- Reviews (kept same) -->
-    <div class="review-card">
-      <div>
-        <p><strong>Alex</strong> – "I lost 10kg in 3 months with this plan!"</p>
-        <p class="long-story">I always struggled to stick to a diet. This app provided a
-          personalized plan that was easy to follow and had healthy recipes. Today, I feel more
-          confident than ever!</p>
-        <div class="stars">⭐⭐⭐⭐⭐</div>
+  <!-- Right Section -->
+  <div class="details-card">
+    <h2>Fitness Details</h2>
+    <label for="weight">Current Weight (kg)</label>
+    <input type="number" id="weight" placeholder="e.g., 70" oninput="updateLiveBMI()">
+
+    <label for="goal">Goal Weight (kg)</label>
+    <input type="number" id="goal" placeholder="e.g., 65" style="display:none;">
+
+    <div id="goal-suggestion-container">
+      <p style="text-align:center;">Suggested Goal Weight: <span id="suggestedGoalVal">--</span> kg</p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button type="button" class="btn" onclick="acceptSuggestedGoal()">Accept</button>
+        <button type="button" class="btn" style="background:#6c757d;" onclick="manualGoalInput()">Set Manually</button>
       </div>
     </div>
-  </section>
-   
-  <footer>
-    <p>Follow us:
-      <a href="#">Facebook</a> |
-      <a href="#">Instagram</a> |
-      <a href="#">Twitter</a>
-    </p>
-    <p>Contact: dietplanner@example.com</p>
-  </footer>
 
-  <script>
-    // Enhanced Personalized Greeting Function
-    displayPersonalizedGreeting();
-      
-      // Optionally redirect to home
-      window.location.reload();
-    
+    <div id="goal-display" style="margin-top:10px;">
+      Current Goal: <span id="finalGoalDisplay">--</span>
+    </div>
 
-    // BMI Calculation function (cleaned up)
+    <label for="bmiDisplay">BMI</label>
+    <input type="text" id="bmiDisplay" placeholder="BMI will appear here" readonly>
 
-   /*
-      const height = parseFloat(document.getElementById("height").value);
-      const weight = parseFloat(document.getElementById("weight").value);
-      const goal = parseFloat(document.getElementById("goal").value);
-      const diet = document.querySelector('input[name="diet"]:checked')?.value;
+    <label for="activity">Activity Level</label>
+    <select id="activity">
+      <option value="1.2">Sedentary (little/no exercise)</option>
+      <option value="1.375">Light (1–3 days/week)</option>
+      <option value="1.55">Moderate (3–5 days/week)</option>
+      <option value="1.725">Active (6–7 days/week)</option>
+      <option value="1.9">Very Active (physical job + exercise)</option>
+    </select>
+  </div>
+</div>
 
-      if (!height || !weight || !goal || !diet) {
-        alert("Please fill all fields and select a diet.");
+<!-- Centered Button -->
+<div style="text-align:center; margin-top:20px;">
+  <button id="main-calc-btn" class="btn" onclick="initiateCalculationAndSuggestion()">Calculate BMI & Suggest Goal</button>
+</div>
+
+<!-- Summary Section -->
+<div id="userSummary" style="margin-top:20px; text-align:center;">
+  <p><strong>BMI:</strong> <span id="bmiVal"></span></p>
+  <p><strong>Goal Weight (kg):</strong> <span id="goalVal"></span></p>
+  <p><strong>Diet Type:</strong> <span id="dietVal"></span></p>
+  <p><strong>Calorie Limit:</strong> <span id="calorieVal"></span> kcal/day</p>
+  <button class="btn" onclick="saveAndRedirect()">Generate Plan</button>
+</div>
+
+<script>
+  // --- Update live BMI ---
+  function updateLiveBMI() {
+    const height = parseFloat(document.getElementById("height").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const bmiDisplay = document.getElementById('bmiDisplay');
+
+    if (!height || !weight || height <= 0 || weight <= 0) {
+        bmiDisplay.value = '';
         return;
-      }
+    }
 
-      // BMI calculation
-      const heightInM = height / 100; // Convert cm to meters
-      const bmi = (weight / (heightInM * heightInM)).toFixed(1);
-
-        const bmiDisplay = document.getElementById('bmiDisplay');
-        if (bmiDisplay) bmiDisplay.value = bmi;
-
-      // Calorie limit logic
-      let calorieLimit;
-      if (bmi < 18.5) calorieLimit = 2200;
-      else if (bmi < 24.9) calorieLimit = 1800;
-      else if (bmi < 29.9) calorieLimit = 1600;
-      else calorieLimit = 1500;
-
-      if (diet === "Keto") calorieLimit += 100;
-      if (diet === "Vegan") calorieLimit -= 50;
-
-      // Display summary
-      document.getElementById("userSummary").style.display = "block";
-      document.getElementById("bmiVal").innerText = bmi;
-      document.getElementById("goalVal").innerText = goal;
-      document.getElementById("dietVal").innerText = diet;
-      document.getElementById("calorieVal").innerText = calorieLimit;
-
-      // Save to user-scoped localStorage
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
-      const id = user?.id || user?.email || 'guest';
-      const key = k => `${k}:${id}`;
-      localStorage.setItem(key("bmi"), bmi);
-      localStorage.setItem(key("goal"), goal);
-      localStorage.setItem(key("diet"), diet);
-      localStorage.setItem(key("calorieLimit"), calorieLimit);
-      localStorage.setItem(key("weight"), weight);
-      localStorage.setItem(key("heightCm"), height);
-      // Also keep global keys for backward compatibility
-      localStorage.setItem("bmi", bmi);
-      localStorage.setItem("goal", goal);
-      localStorage.setItem("diet", diet);
-      localStorage.setItem("calorieLimit", calorieLimit);
-      localStorage.setItem("weight", weight);
-      // Save to backend if logged in so Summary/Health Tracker reflect next login
-      try {
-        const token = localStorage.getItem('authToken');
-        const userObj = JSON.parse(localStorage.getItem('user') || 'null');
-        if (token) {
-          console.log('Sending to backend with token:', { dietType: diet, height, weight, goalWeight: goal, calorieTarget: calorieLimit, bmi });
-          fetch('http://localhost:3000/api/diet-preferences', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-            body: JSON.stringify({
-              dietType: diet,
-              height: height,
-              weight: weight,
-              goalWeight: goal,
-              activityLevel: 'moderate',
-              calorieTarget: calorieLimit,
-              bmi: parseFloat(bmi)
-            })
-          }).then(res => {
-            console.log('Backend save response:', res.status);
-            return res.json();
-          }).then(data => {
-            console.log('Backend save success:', data);
-          }).catch(err => {
-            console.error('Backend save error:', err);
-          });
-        } else if (userObj?.email) {
-          // Public fallback if token missing: save by email
-          fetch('http://localhost:3000/api/diet-preferences/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: userObj.email,
-              dietType: diet,
-              height: height,
-              weight: weight,
-              goalWeight: goal,
-              activityLevel: 'moderate',
-              calorieTarget: calorieLimit,
-              bmi: bmi
-            })
-          }).then(res => {
-            console.log('Public backend save response:', res.status);
-            return res.json();
-          }).then(data => {
-            console.log('Public backend save data:', data);
-          }).catch(err => {
-            console.error('Public backend save error:', err);
-          });
-        }
-      } catch (e) { 
-        console.error('Backend save exception:', e);
-      }
-    } */
-
-  async function calculateBMI() {
-  const height = parseFloat(document.getElementById("height").value);
-  const weight = parseFloat(document.getElementById("weight").value);
-  const goal = parseFloat(document.getElementById("goal").value);
-  const diet = document.querySelector('input[name="diet"]:checked')?.value;
-
-  if (!height || !weight || !goal || !diet) {
-    alert("Please fill all fields and select a diet.");
-    return;
+    const heightInM = height / 100;
+    const bmi = weight / (heightInM * heightInM);
+    bmiDisplay.value = bmi.toFixed(1);
   }
 
-  // BMI calculation
-  const heightInM = height / 100;
-  const bmi = (weight / (heightInM * heightInM)).toFixed(1);
-
-  // Calorie calculation
-  let calorieLimit;
-  if (bmi < 18.5) calorieLimit = 2200;
-  else if (bmi < 24.9) calorieLimit = 1800;
-  else if (bmi < 29.9) calorieLimit = 1600;
-  else calorieLimit = 1500;
-
-  if (diet === "Keto") calorieLimit += 100;
-  if (diet === "Vegan") calorieLimit -= 50;
-
-  // Display summary
-  document.getElementById("userSummary").style.display = "block";
-  document.getElementById("bmiVal").innerText = bmi;
-  document.getElementById("goalVal").innerText = goal;
-  document.getElementById("dietVal").innerText = diet;
-  document.getElementById("calorieVal").innerText = calorieLimit;
-
-  // Save to localStorage (backup)
-  const summaryData = {
-    bmi: bmi,
-    height: height,
-    weight: weight,
-    goalWeight: goal,
-    dietType: diet,
-    calorieLimit: calorieLimit
-  };
-  
-  localStorage.setItem("userSummary", JSON.stringify(summaryData));
-  localStorage.setItem("bmi", bmi);
-  localStorage.setItem("goal", goal);
-  localStorage.setItem("diet", diet);
-  localStorage.setItem("calorieLimit", calorieLimit);
-  localStorage.setItem("height", height);
-  localStorage.setItem("weight", weight);
-
-  // Save to backend if logged in
-  await saveSummaryToBackend(summaryData);
-}
-
-// Add this new function
-async function saveSummaryToBackend(summaryData) {
-  const authToken = localStorage.getItem('authToken');
-  
-  if (!authToken) {
-    console.log('User not logged in, data saved to localStorage only');
-    return;
+  // --- Suggest goal weight ---
+  function suggestGoalWeight(heightCm) {
+    const targetBMI = 22.5;
+    const heightInM = heightCm / 100;
+    const suggestedWeight = targetBMI * heightInM * heightInM;
+    return Math.max(suggestedWeight.toFixed(0), 10);
   }
 
-  try {
-    const response = await fetch('/api/update-diet-preferences', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify(summaryData)
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Summary saved to backend successfully:', result);
-    } else {
-      console.error('Failed to save summary to backend');
-    }
-  } catch (error) {
-    console.error('Error saving summary to backend:', error);
+  // --- Accept suggested goal ---
+  function acceptSuggestedGoal() {
+    const goalInput = document.getElementById("goal");
+    const suggestedGoal = document.getElementById("suggestedGoalVal").innerText;
+    goalInput.value = suggestedGoal;
+    document.getElementById("finalGoalDisplay").innerText = `${suggestedGoal} kg (Accepted)`;
   }
-}
 
-
-
-    function updateLiveBMI() {
-      const height = parseFloat(document.getElementById("height").value);
-      const weight = parseFloat(document.getElementById("weight").value);
-      const bmiDisplay = document.getElementById('bmiDisplay');
-      if (!height || !weight || !bmiDisplay) return;
-      const heightInM = height / 100;
-      const bmi = (weight / (heightInM * heightInM)).toFixed(1);
-      if (isFinite(bmi)) bmiDisplay.value = bmi;
-    }
-
-    function saveAndRedirect() {
-      window.location.href = "summary.html";
-    }
-
-    // Initialize greeting when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      displayPersonalizedGreeting();
-      
-      // Update greeting every minute
-      setInterval(displayPersonalizedGreeting, 60000);
-    });
-
-    // Listen for storage changes (when user logs in/out in another tab)
-    window.addEventListener('storage', function(e) {
-      if (e.key === 'authToken' || e.key === 'user') {
-        displayPersonalizedGreeting();
-      }
-    });
-
-    // Update greeting after login (call this from login success)
-    function updateGreetingOnAuth() {
-      setTimeout(displayPersonalizedGreeting, 100);
-    }
-
-    // Update auth section in navigation
-    function updateAuthSection(isLoggedIn) {
-      const authSection = document.getElementById('authSection');
-      
-      if (isLoggedIn) {
-        const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-        const firstName = userInfo.name ? userInfo.name.split(' ')[0] : 'User';
-        
-        authSection.innerHTML = `
-          <div class="nav-user-section">
-           // <span class="user-name">Hi, ${firstName}</span>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-          </div>
-        `;
-      } else {
-        authSection.innerHTML = '<a href="login.html">Login</a>';
-      }
-    }
-
-    // Logout function
-    function logout() {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      localStorage.removeItem('diet');
-      localStorage.removeItem('bmi');
-      localStorage.removeItem('goal');
-      localStorage.removeItem('calorieLimit');
-      
-      // Show logout confirmation
-      alert('You have been logged out successfully!');
-      
-      // Update greeting and navigation
-      displayPersonalizedGreeting();
-      
-      // Optionally redirect to home
-      window.location.reload();
-    }
-    //imp
-async function saveSummaryToBackend(summaryData) {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (!user.id) {
-    console.log("User not logged in");
-    return;
+  // --- Manual goal input ---
+  function manualGoalInput() {
+    const goalInput = document.getElementById("goal");
+    goalInput.style.display = "block";
+    goalInput.focus();
+    document.getElementById("goal-suggestion-container").style.display = "none";
   }
-  
 
-  // Force correct types
-  const payload = {
-    userId: user.id,
-    dietType: summaryData.dietType,
-    height: Number(summaryData.height) || 0,
-    weight: Number(summaryData.weight) || 0,
-    goalWeight: Number(summaryData.goalWeight) || 0,
-    activityLevel: 'moderate',
-    calorieTarget: Number(summaryData.calorieLimit),
-    bmi: Number(summaryData.bmi) || 0
-  };
+  // --- Initiate Calculation ---
+  function initiateCalculationAndSuggestion() {
+    const height = parseFloat(document.getElementById("height").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const age = parseInt(document.getElementById("age").value);
+    const gender = document.getElementById("gender").value;
+const dietElements = document.querySelectorAll('input[name="diet"]:checked');
+const diet = Array.from(dietElements).map(el => el.value).join(", ");
+    const activity = parseFloat(document.getElementById("activity").value);
 
-  console.log("Sending payload:", payload);
+    if (!height || !weight || !age || !gender || !diet) {
+      alert("Please enter Height, Weight, Age, Gender and select a diet.");
+      return;
+    }
 
-  try {
-    const response = await fetch('/api/diet-preferences', {
+    // BMI
+    const heightInM = height / 100;
+    const bmi = (weight / (heightInM * heightInM)).toFixed(1);
+    document.getElementById('bmiDisplay').value = bmi;
+
+    // Ask backend AI for goal weight and daily calories, with graceful fallback
+    fetch('/ai-goals', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        gender,
+        age,
+        heightCm: height,
+        weightKg: weight,
+        activity,
+        dietPreference: diet,
+        bmi
+      })
+    })
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('Failed to get AI goals')))
+    .then(({ goalWeight, dailyCalories }) => {
+      const suggestedGoal = Number.isFinite(goalWeight) ? goalWeight : suggestGoalWeight(height);
+      const calorieLimit = Number.isFinite(dailyCalories) ? dailyCalories : calculateCalorieLimit(weight, height, age, gender, activity, diet);
+
+      document.getElementById("suggestedGoalVal").innerText = suggestedGoal;
+      document.getElementById("goal").value = suggestedGoal;
+      document.getElementById("finalGoalDisplay").innerText = `${suggestedGoal} kg (Suggested)`;
+      document.getElementById("goal-display").style.display = "block";
+
+      // Update Summary
+      document.getElementById('bmiVal').innerText = bmi;
+      document.getElementById('goalVal').innerText = suggestedGoal;
+      document.getElementById('dietVal').innerText = diet;
+      document.getElementById('calorieVal').innerText = calorieLimit;
+
+      // Change button behavior
+      document.getElementById('main-calc-btn').innerText = "Show Summary";
+      document.getElementById('main-calc-btn').onclick = () => {
+        showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+      };
+    })
+    .catch(() => {
+      // Pure local fallback
+      const suggestedGoal = suggestGoalWeight(height);
+      const calorieLimit = calculateCalorieLimit(weight, height, age, gender, activity, diet);
+
+      document.getElementById("suggestedGoalVal").innerText = suggestedGoal;
+      document.getElementById("goal").value = suggestedGoal;
+      document.getElementById("finalGoalDisplay").innerText = `${suggestedGoal} kg (Suggested)`;
+      document.getElementById("goal-display").style.display = "block";
+
+      document.getElementById('bmiVal').innerText = bmi;
+      document.getElementById('goalVal').innerText = suggestedGoal;
+      document.getElementById('dietVal').innerText = diet;
+      document.getElementById('calorieVal').innerText = calorieLimit;
+
+      document.getElementById('main-calc-btn').innerText = "Show Summary";
+      document.getElementById('main-calc-btn').onclick = () => {
+        showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+      };
     });
-    const result = await response.json();
-    console.log("Backend response:", result);
-  } catch (err) {
-    console.error("Error saving to backend:", err);
+
+    // Change button
+    document.getElementById('main-calc-btn').innerText = "Show Summary";
+    document.getElementById('main-calc-btn').onclick = () => {
+      showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+    };
   }
-}
 
-
-    // BMI Calculation function (cleaned up)
-    function calculateBMI() {
-      const height = parseFloat(document.getElementById("height").value);
-      const weight = parseFloat(document.getElementById("weight").value);
-      const goal = parseFloat(document.getElementById("goal").value);
-      const diet = document.querySelector('input[name="diet"]:checked')?.value;
-
-      if (!height || !weight || !goal || !diet) {
-        alert("Please fill all fields and select a diet.");
-        return;
-      }
-
-      // BMI calculation
-      const heightInM = height / 100; // Convert cm to meters
-      const bmi = (weight / (heightInM * heightInM)).toFixed(1);
-
-      // Calorie limit logic
-      let calorieLimit;
-      if (bmi < 18.5) calorieLimit = 2200;
-      else if (bmi < 24.9) calorieLimit = 1800;
-      else if (bmi < 29.9) calorieLimit = 1600;
-      else calorieLimit = 1500;
-
-      if (diet === "Keto") calorieLimit += 100;
-      if (diet === "Vegan") calorieLimit -= 50;
-
-      // Display summary
-      document.getElementById("userSummary").style.display = "block";
-      document.getElementById("bmiVal").innerText = bmi;
-      document.getElementById("goalVal").innerText = goal;
-      document.getElementById("dietVal").innerText = diet;
-      document.getElementById("calorieVal").innerText = calorieLimit;
-
-      // Save to localStorage
-      localStorage.setItem("bmi", bmi);
-      localStorage.setItem("goal", goal);
-      localStorage.setItem("diet", diet);
-      localStorage.setItem("calorieLimit", calorieLimit);
+  // --- Calorie Calculator (Mifflin–St Jeor) ---
+  function calculateCalorieLimit(weight, height, age, gender, activity, diet) {
+    let bmr;
+    if (gender === "male") {
+      bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else {
+      bmr = 10 * weight + 6.25 * height - 5 * age - 161;
     }
 
-    function saveAndRedirect() {
-      window.location.href = "summary.html";
+    let tdee = bmr * activity;
+
+    // Adjust slightly by diet type (optional)
+    switch(diet) {
+      case "Keto": tdee -= 200; break;
+      case "Vegan": tdee -= 100; break;
+      case "Vegetarian": tdee += 50; break;
+      case "Non-Veg": tdee += 100; break;
+      case "Gluten-Free": tdee -= 50; break;
     }
 
-    // Initialize greeting when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      displayPersonalizedGreeting();
-      
-      // Update greeting every minute
-      setInterval(displayPersonalizedGreeting, 60000);
-    });
+    return Math.round(tdee);
+  }
 
-    // Listen for storage changes (when user logs in/out in another tab)
-    window.addEventListener('storage', function(e) {
-      if (e.key === 'authToken' || e.key === 'user') {
-        displayPersonalizedGreeting();
-      }
-    });
+  // --- Show Summary ---
+  function showFinalSummary(height, weight, bmi, diet, goal, calorieLimit) {
+    document.getElementById('bmiVal').innerText = bmi;
+    document.getElementById('goalVal').innerText = goal;
+    document.getElementById('dietVal').innerText = diet;
+    document.getElementById('calorieVal').innerText = calorieLimit;
+  }
 
-    // Update greeting after login (call this from login success)
-    function updateGreetingOnAuth() {
-      setTimeout(displayPersonalizedGreeting, 100);
+  // --- Save & Redirect ---
+  function saveAndRedirect() {
+    const height = document.getElementById('height').value;
+    const weight = document.getElementById('weight').value;
+    const bmi = document.getElementById('bmiDisplay').value;
+    const goal = document.getElementById('goal').value;
+    const diet = document.querySelector('input[name="diet"]:checked')?.value;
+    const gender = document.getElementById('gender').value;
+    const age = document.getElementById('age').value;
+    const activity = document.getElementById('activity').value;
+
+    if (!bmi || !goal || !diet || !weight || !height || !gender || !age) {
+      alert("Please fill in all details before generating the plan.");
+      return;
     }
 
-   
-  </script>
-  <script src="script.js"></script>
+    // Store all user data in localStorage for summary page
+    localStorage.setItem('height', height);
+    localStorage.setItem('weight', weight);
+    localStorage.setItem('bmi', bmi);
+    localStorage.setItem('goal', goal);
+    localStorage.setItem('diet', diet);
+    localStorage.setItem('gender', gender);
+    localStorage.setItem('age', age);
+    localStorage.setItem('activity', activity);
+
+    const calorieLimit = calculateCalorieLimit(weight, height, age, gender, activity, diet);
+    localStorage.setItem('calorieLimit', calorieLimit);
+
+    // Set flag to trigger AI meal plan generation on summary page
+    localStorage.setItem('generatePlan', 'true');
+
+    window.location.href = 'summary.html';
+  }
+</script>
+
+
   
 
-</body>
 
-</html>
+
+  <!-- Right Section -->
+  <div class="right">
+    <h2>Diet Tips</h2>
+    <iframe src="https://www.youtube.com/watch?v=q42n27oCOUM" title="Diet Tips" allowfullscreen loading="lazy"></iframe>
+    <h2>Exercise Videos</h2>
+    <iframe src="https://www.youtube.com/embed/UItWltVZZmE" title="Exercise" allowfullscreen loading="lazy"></iframe>
+    <h2>Healthy Recipes</h2>
+    <iframe src="https://www.youtube.com/embed/4zG4TG6AQa0" title="Recipes" allowfullscreen loading="lazy"></iframe>
+  </div>
+</div>
+
+<footer>
+  <p>Follow us:
+    <a href="#">Facebook</a> |
+    <a href="#">Instagram</a> |
+    <a href="#">Twitter</a>
+  </p>
+  <p>Contact: dietplanner@gmail.com</p>
+</footer>
+
+<script>
+  // --- Diet option "Know More" toggle ---
+  document.querySelectorAll('.know-more').forEach(button => {
+    button.addEventListener('click', () => {
+      const info = button.nextElementSibling;
+      info.style.display = info.style.display === 'block' ? 'none' : 'block';
+    });
+  });
+
+  // --- Personalized Greeting ---
+  function updateGreeting() {
+    const greetingEl = document.getElementById('greeting');
+    const hour = new Date().getHours();
+    let greetingText = "Good Night";
+
+    if (hour >= 5 && hour < 12) {
+      greetingText = "Good Morning";
+    } else if (hour >= 12 && hour < 17) {
+      greetingText = "Good Afternoon";
+    } else if (hour >= 17 && hour < 21) {
+      greetingText = "Good Evening";
+    }
+
+    greetingEl.innerText = greetingText;
+
+    // Check login status
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.name) {
+      greetingEl.classList.add('greeting-logged-in');
+      greetingEl.innerHTML += `<div class="welcome-message">Welcome back, ${user.name}!</div>`;
+      addUserToNav(user.name);
+    }
+  }
+
+  function addUserToNav(name) {
+    const authSection = document.getElementById('authSection');
+    authSection.innerHTML = `
+      <div class="nav-user-section">
+        <span class="user-name">${name}</span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    `;
+  }
+
+  function logout() {
+    localStorage.removeItem('user');
+    window.location.reload();
+  }
+
+  updateGreeting();

@@ -24,6 +24,37 @@
     .tips { white-space: pre-wrap; background: #f9fff7; border: 1px solid #c8e6c9; padding: 12px; border-radius: 8px; min-height: 120px; }
     .summary { white-space: pre-wrap; background: #f8f9ff; border: 1px solid #cfe2ff; padding: 12px; border-radius: 8px; min-height: 80px; }
     .goals { white-space: pre-wrap; background: #fffaf4; border: 1px solid #ffe0b2; padding: 12px; border-radius: 8px; }
+    .exercise-recommendations { 
+      background: #fff3e0; 
+      border: 1px solid #ffcc02; 
+      padding: 15px; 
+      border-radius: 8px; 
+      min-height: 150px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .exercise-item {
+      background: white;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 6px;
+      border-left: 4px solid #ff9800;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .exercise-title {
+      font-weight: bold;
+      color: #e65100;
+      margin-bottom: 4px;
+    }
+    .exercise-details {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .exercise-benefits {
+      font-size: 12px;
+      color: #4caf50;
+      font-style: italic;
+    }
     @media (max-width: 900px) { .tracker-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -126,27 +157,38 @@
       <h2>AI Progress Summary</h2>
       <div class="summary" id="htSummary">Summaries will appear here after logging data.</div>
       <div class="form-actions">
-        <button onclick="generateProgressSummary()">Summarize Progress</button>
+        <button onclick="generateProgressSummary()">🤖 AI Progress Summary</button>
       </div>
+      <div class="small">Updates automatically when you log new health data. Analyzes your diet, exercise, sleep, and mood patterns.</div>
     </div>
 
     <div class="card" style="margin-top: 20px;">
       <h2>AI Tips</h2>
       <div class="tips" id="htTips">Add a few days of logs to see personalized tips.</div>
       <div class="form-actions">
-        <button onclick="generateAITips()">Get AI Feedback</button>
+        <button onclick="generateAITips()">🤖 Get AI Tips</button>
       </div>
-      <div class="small">Tips generated locally. If backend AI is configured, it will be used.</div>
+      <div class="small">AI-powered personalized tips using Ollama. Analyzes your diet, exercise, sleep, and mood. Updates automatically with new data.</div>
     </div>
 
     <div class="card" style="margin-top: 20px;">
       <h2>Smart Goals</h2>
       <div class="goals" id="htGoals">AI goal suggestions will show here.</div>
       <div class="form-actions">
-        <button onclick="suggestGoals()">Suggest Goals</button>
+        <button onclick="suggestGoals()">🤖 AI Smart Goals</button>
         <button onclick="applySuggestedGoals()" style="background:#2e7d32">Apply Suggested Goals</button>
       </div>
-      <div class="small">Uses current logs and your existing targets (e.g., calories) to propose adjustments.</div>
+      <div class="small">AI-generated personalized goals using Ollama. Based on your health data, diet patterns, and lifestyle. Updates automatically with new data.</div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>🤖 AI Exercise Recommendations</h2>
+      <div class="exercise-recommendations" id="htExercises">AI exercise suggestions will appear here based on your health data.</div>
+      <div class="form-actions">
+        <button onclick="generateExerciseRecommendations()">🏃‍♀️ Get AI Exercise Plan</button>
+        <button onclick="refreshExercisePlan()" style="background:#ff9800">🔄 New Exercise Options</button>
+      </div>
+      <div class="small">Personalized exercise recommendations based on your weight, BMI, diet, sleep, and mood patterns. Updates automatically with new health data.</div>
     </div>
   </div>
 
@@ -305,22 +347,47 @@
     async function generateAITips() {
       const tipsEl = document.getElementById('htTips');
       const logs = getLogs();
-      if (logs.length < 2) {
-        tipsEl.textContent = 'Add at least two entries to analyze trends.';
+      if (logs.length < 1) {
+        tipsEl.textContent = 'Add at least one entry to get AI tips.';
         return;
       }
-      tipsEl.textContent = 'Analyzing your recent logs...';
+      tipsEl.textContent = '🤖 Generating personalized AI tips...';
 
-      // Try backend first if available
       try {
-        const res = await fetch(`${API_BASE}/ai/health-tips`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logs: logs.slice(-7) }) });
+        // Get the most recent entry for AI analysis
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1); // Previous 6 entries for context
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        const res = await fetch(`${API_BASE}/ai-health-insights`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            calories: latest.calories,
+            exercise: latest.exercise,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            notes: latest.notes || '',
+            diet: dietPreference,
+            previousData: previousData
+          })
+        });
+        
         if (res.ok) {
           const data = await res.json();
-          if (data && data.tips) { tipsEl.textContent = data.tips; return; }
+          if (data && data.tips && Array.isArray(data.tips)) {
+            tipsEl.textContent = data.tips.join('\n\n');
+            return;
+          }
         }
-      } catch (e) { /* fall back */ }
+      } catch (e) {
+        console.warn('AI tips failed, using fallback:', e);
+      }
 
-      // Local simple heuristic fallback
+      // Fallback to local analysis
       const recent = logs.slice(-7);
       const weightDelta = recent.length >= 2 ? (recent[recent.length-1].weight - recent[0].weight) : 0;
       const avgCalories = avg(recent.map(r => r.calories).filter(v => typeof v === 'number'));
@@ -358,42 +425,108 @@
     async function generateProgressSummary() {
       const el = document.getElementById('htSummary');
       const logs = getLogs();
-      if (logs.length < 2) { el.textContent = 'Add at least two entries to summarize progress.'; return; }
-      el.textContent = 'Summarizing your progress...';
+      if (logs.length < 1) { 
+        el.textContent = 'Add at least one entry to get AI progress summary.'; 
+        return; 
+      }
+      el.textContent = '🤖 Generating AI progress summary...';
 
-      // Backend LLM attempt
       try {
-        const res = await fetch(`${API_BASE}/ai/progress-summary`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logs: logs.slice(-30), bmiBaseline: getBMIParams() }) });
-        if (res.ok) { const data = await res.json(); if (data && data.summary) { el.textContent = data.summary; return; } }
-      } catch (e) { /* fallback */ }
+        // Get the most recent entry for AI analysis
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1); // Previous 6 entries for context
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        const res = await fetch(`${API_BASE}/ai-health-insights`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            calories: latest.calories,
+            exercise: latest.exercise,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            notes: latest.notes || '',
+            diet: dietPreference,
+            previousData: previousData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.summary) {
+            el.textContent = data.summary;
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('AI summary failed, using fallback:', e);
+      }
 
       // Local fallback: compute simple summary
       const recent = logs.slice(-30);
-      const start = recent[0];
-      const end = recent[recent.length - 1];
-      const weightDelta = end.weight - start.weight;
-      const bmiParams = getBMIParams();
-      let bmiText = '';
-      if (bmiParams) {
-        const bmiStart = calcBMI(start.weight, bmiParams.heightCm);
-        const bmiEnd = calcBMI(end.weight, bmiParams.heightCm);
-        const bmiChangePct = bmiStart ? ((bmiEnd - bmiStart) / bmiStart) * 100 : 0;
-        bmiText = `BMI: ${bmiStart.toFixed(1)} → ${bmiEnd.toFixed(1)} (${bmiChangePct >= 0 ? '+' : ''}${bmiChangePct.toFixed(1)}%).`;
+      if (recent.length >= 2) {
+        const start = recent[0];
+        const end = recent[recent.length - 1];
+        const weightDelta = end.weight - start.weight;
+        const bmiParams = getBMIParams();
+        let bmiText = '';
+        if (bmiParams) {
+          const bmiStart = calcBMI(start.weight, bmiParams.heightCm);
+          const bmiEnd = calcBMI(end.weight, bmiParams.heightCm);
+          const bmiChangePct = bmiStart ? ((bmiEnd - bmiStart) / bmiStart) * 100 : 0;
+          bmiText = `BMI: ${bmiStart.toFixed(1)} → ${bmiEnd.toFixed(1)} (${bmiChangePct >= 0 ? '+' : ''}${bmiChangePct.toFixed(1)}%).`;
+        }
+        el.textContent = `From ${start.date} to ${end.date}: weight ${fmtDelta(weightDelta)}. ${bmiText}`.trim();
+      } else {
+        el.textContent = 'Keep logging your daily data to see progress trends!';
       }
-      el.textContent = `From ${start.date} to ${end.date}: weight ${fmtDelta(weightDelta)}. ${bmiText}`.trim();
     }
 
     async function suggestGoals() {
       const el = document.getElementById('htGoals');
       const logs = getLogs();
-      if (!logs.length) { el.textContent = 'Add some logs to get goal suggestions.'; return; }
-      el.textContent = 'Analyzing and suggesting goals...';
+      if (!logs.length) { 
+        el.textContent = 'Add some logs to get AI goal suggestions.'; 
+        return; 
+      }
+      el.textContent = '🤖 Generating AI smart goals...';
 
-      const payload = { logs: logs.slice(-30), targets: { calories: parseInt(localStorage.getItem('calorieLimit') || '0'), goalWeight: parseFloat(localStorage.getItem('goal') || '0') } };
       try {
-        const res = await fetch(`${API_BASE}/ai/goal-suggestions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (res.ok) { const data = await res.json(); if (data && data.goals) { el.textContent = data.goals; return; } }
-      } catch (e) { /* fallback */ }
+        // Get the most recent entry for AI analysis
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1); // Previous 6 entries for context
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        const res = await fetch(`${API_BASE}/ai-health-insights`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            calories: latest.calories,
+            exercise: latest.exercise,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            notes: latest.notes || '',
+            diet: dietPreference,
+            previousData: previousData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.goals && Array.isArray(data.goals)) {
+            el.textContent = data.goals.join('\n\n');
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('AI goals failed, using fallback:', e);
+      }
 
       // Local fallback goal logic
       const recent = logs.slice(-14);
@@ -432,9 +565,199 @@
     }
 
     function autoGenerateInsights() {
-      // Automatically refresh summaries and goals when logs change
+      // Automatically refresh ALL AI sections when logs change
+      console.log('🔄 Auto-generating all AI insights for new health data...');
+      
+      // Generate all AI insights with staggered timing for better UX
       generateProgressSummary();
-      // Do not auto-call AI tips to avoid frequent requests; user can click.
+      
+      setTimeout(() => {
+        generateAITips();
+      }, 500);
+      
+      setTimeout(() => {
+        suggestGoals();
+      }, 1000);
+      
+      setTimeout(() => {
+        generateExerciseRecommendations();
+      }, 1500);
+      
+      // Show success message
+      setTimeout(() => {
+        setStatus('✅ All AI insights updated based on your new health data!');
+      }, 2000);
+    }
+
+    async function generateExerciseRecommendations() {
+      const exercisesEl = document.getElementById('htExercises');
+      const logs = getLogs();
+      if (!logs.length) {
+        exercisesEl.textContent = 'Add health data to get personalized exercise recommendations.';
+        return;
+      }
+      exercisesEl.textContent = '🏃‍♀️ Generating AI exercise recommendations...';
+
+      try {
+        // Get the most recent entry and user data
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1);
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        // Calculate BMI if we have height data
+        const heightCm = parseFloat(localStorage.getItem('height') || '0') || null;
+        let bmi = null;
+        if (heightCm && latest.weight) {
+          const heightM = heightCm / 100;
+          bmi = latest.weight / (heightM * heightM);
+        }
+        
+        const res = await fetch(`${API_BASE}/ai-exercise-recommendations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            bmi: bmi,
+            diet: dietPreference,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            exercise: latest.exercise,
+            calories: latest.calories,
+            previousData: previousData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.exercises && Array.isArray(data.exercises)) {
+            displayExerciseRecommendations(data.exercises);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('AI exercise recommendations failed, using fallback:', e);
+      }
+
+      // Fallback to local exercise recommendations
+      const fallbackExercises = getFallbackExerciseRecommendations(logs);
+      displayExerciseRecommendations(fallbackExercises);
+    }
+
+    function displayExerciseRecommendations(exercises) {
+      const exercisesEl = document.getElementById('htExercises');
+      
+      if (!exercises || exercises.length === 0) {
+        exercisesEl.textContent = 'No exercise recommendations available at this time.';
+        return;
+      }
+
+      const html = exercises.map(exercise => `
+        <div class="exercise-item">
+          <div class="exercise-title">${exercise.name}</div>
+          <div class="exercise-details">
+            <strong>Duration:</strong> ${exercise.duration} | 
+            <strong>Intensity:</strong> ${exercise.intensity}
+          </div>
+          <div class="exercise-details">
+            <strong>Instructions:</strong> ${exercise.instructions}
+          </div>
+          <div class="exercise-benefits">
+            <strong>Benefits:</strong> ${exercise.benefits}
+          </div>
+        </div>
+      `).join('');
+
+      exercisesEl.innerHTML = html;
+    }
+
+    function getFallbackExerciseRecommendations(logs) {
+      const latest = logs[logs.length - 1];
+      const currentExercise = latest.exercise || 0;
+      const isTired = latest.mood && (latest.mood.includes('😴') || latest.mood.includes('Tired'));
+      const isStressed = latest.mood && latest.mood.includes('😟');
+      const lowSleep = latest.sleep && latest.sleep < 7;
+
+      const exercises = [];
+
+      if (isTired || lowSleep) {
+        exercises.push({
+          name: "Gentle Walking",
+          duration: "15-20 minutes",
+          intensity: "Low",
+          instructions: "Start with a slow, comfortable pace. Focus on steady breathing and gentle movement.",
+          benefits: "Improves circulation, reduces stress, and provides gentle energy boost."
+        });
+      } else if (currentExercise < 30) {
+        exercises.push({
+          name: "Brisk Walking",
+          duration: "20-30 minutes",
+          intensity: "Medium",
+          instructions: "Walk at a pace that raises your heart rate but allows you to speak in short sentences.",
+          benefits: "Builds cardiovascular endurance, burns calories, and improves mood."
+        });
+      } else {
+        exercises.push({
+          name: "Interval Walking/Jogging",
+          duration: "25-35 minutes",
+          intensity: "Medium-High",
+          instructions: "Alternate between 2 minutes of brisk walking and 1 minute of light jogging.",
+          benefits: "Improves cardiovascular fitness and builds endurance efficiently."
+        });
+      }
+
+      if (isStressed) {
+        exercises.push({
+          name: "Yoga Flow",
+          duration: "15-25 minutes",
+          intensity: "Low-Medium",
+          instructions: "Perform gentle yoga poses focusing on breathing. Include cat-cow, child's pose, and gentle twists.",
+          benefits: "Reduces stress hormones, improves flexibility, and promotes mental relaxation."
+        });
+      } else if (currentExercise < 30) {
+        exercises.push({
+          name: "Bodyweight Strength Circuit",
+          duration: "15-20 minutes",
+          intensity: "Medium",
+          instructions: "Perform 3 rounds of: 10 squats, 10 push-ups (knee or wall), 10 lunges each leg, 30-second plank.",
+          benefits: "Builds functional strength, improves muscle tone, and increases metabolism."
+        });
+      } else {
+        exercises.push({
+          name: "Advanced Bodyweight Circuit",
+          duration: "25-30 minutes",
+          intensity: "High",
+          instructions: "Perform 4 rounds of: 15 jump squats, 15 burpees, 20 mountain climbers, 15 tricep dips, 1-minute plank.",
+          benefits: "Builds explosive power, improves cardiovascular fitness, and burns significant calories."
+        });
+      }
+
+      exercises.push({
+        name: "Dynamic Stretching Routine",
+        duration: "10-15 minutes",
+        intensity: "Low",
+        instructions: "Perform arm circles, leg swings, hip circles, and gentle spinal twists.",
+        benefits: "Improves joint mobility, reduces injury risk, and enhances recovery."
+      });
+
+      return exercises;
+    }
+
+    async function refreshExercisePlan() {
+      const button = document.querySelector('button[onclick="refreshExercisePlan()"]');
+      const originalText = button.textContent;
+      button.textContent = '🔄 Generating...';
+      button.disabled = true;
+
+      try {
+        await generateExerciseRecommendations();
+      } catch (e) {
+        console.warn('Refresh exercise plan failed:', e);
+      } finally {
+        button.textContent = originalText;
+        button.disabled = false;
+      }
     }
 
     function getBMIParams() {

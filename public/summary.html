@@ -727,7 +727,18 @@
         document.addEventListener('DOMContentLoaded', async function() {
             await loadUserData();
             updateDateDisplay();
-            loadMealPlan();
+            
+            // Check if user came from home page "Generate Plan" button
+            const shouldGeneratePlan = localStorage.getItem('generatePlan') === 'true';
+            if (shouldGeneratePlan) {
+                localStorage.removeItem('generatePlan'); // Clear flag
+                // Auto-generate AI meal plan
+                setTimeout(() => {
+                    regenerateMeals();
+                }, 1000);
+            } else {
+                loadMealPlan();
+            }
         });
 
         // Load user data (backend first, then local fallback)
@@ -949,7 +960,7 @@
         };
 
         // View switching
-        function setView(view) {
+        async function setView(view) {
             currentView = view;
 
             // Update button states
@@ -970,18 +981,18 @@
             }
 
             // Load meal plan
-            loadMealPlan();
+            await loadMealPlan();
         }
 
         // Date navigation
-        function navigateDate(direction) {
+        async function navigateDate(direction) {
             if (currentView === 'day') {
                 currentDate.setDate(currentDate.getDate() + direction);
             } else {
                 currentDate.setDate(currentDate.getDate() + (direction * 7));
             }
             updateDateDisplay();
-            loadMealPlan();
+            await loadMealPlan();
         }
 
         function updateDateDisplay() {
@@ -994,27 +1005,58 @@
         }
 
         // Load meal plan
-        function loadMealPlan() {
+        async function loadMealPlan() {
             if (currentView === 'day') {
-                loadDayMealPlan();
+                await loadDayMealPlan();
             } else {
-                loadWeekMealPlan();
+                await loadWeekMealPlan();
             }
         }
 
-        // Load daily meal plan
-        function loadDayMealPlan() {
-            document.getElementById('mealSections').innerHTML = '<div class="loading">Loading meal plan...</div>';
-            
-            setTimeout(() => {
+        // Load daily meal plan (uses backend AI route with a graceful fallback)
+        async function loadDayMealPlan() {
+            const container = document.getElementById('mealSections');
+            container.innerHTML = '<div class="loading">Loading meal plan...</div>';
+
+            try {
+                // Pull inputs from summary cards or stored globals
+                const bmi = parseFloat((document.getElementById('bmiValue').textContent || '').replace(/[^0-9.]/g, '')) || null;
+                const goalWeight = parseFloat((document.getElementById('goalWeight').textContent || '').replace(/[^0-9.]/g, '')) || null;
+                const dietPreference = (document.getElementById('dietType').textContent || userDiet || 'Vegan').trim();
+                const calorieLimitText = document.getElementById('calorieLimit').textContent || '';
+                const calorieLimit = parseInt(calorieLimitText.replace(/[^0-9]/g, ''), 10) || calorieTarget || 1600;
+
+                const resp = await fetch(`${API_BASE}/ai-meal-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bmi, goalWeight, dietPreference, calorieLimit })
+                });
+
+                if (!resp.ok) throw new Error('Failed to fetch AI meal plan');
+                const data = await resp.json();
+                const plan = data?.plan;
+
+                if (!plan || !plan.breakfast || !plan.lunch || !plan.dinner || !Array.isArray(plan.snacks)) {
+                    throw new Error('Malformed AI plan, using fallback');
+                }
+
+                // Map AI shape to existing UI shape (add basic icon + macros placeholder)
+                const withIcons = aiPlanToUiPlan(plan);
+                currentMealPlan = withIcons;
+                displayDayMealPlan(withIcons);
+                updateNutritionChart(withIcons);
+                showSuccessMessage(`🤖 AI-generated ${dietPreference} meal plan created!`);
+            } catch (e) {
+                console.warn('AI plan failed; falling back to local generator:', e.message || e);
                 const dailyPlan = generateDailyMealPlan(userDiet);
                 currentMealPlan = dailyPlan;
                 displayDayMealPlan(dailyPlan);
                 updateNutritionChart(dailyPlan);
-            }, 800);
+                showMessage('AI unavailable. Showing a smart local plan.', 'warning');
+            }
         }
 
-        // Generate random daily meal plan
+        // Generate random daily meal plan (local fallback)
         function generateDailyMealPlan(dietType) {
             const meals = mealDatabase[dietType] || mealDatabase['Vegan'];
             
@@ -1034,6 +1076,73 @@
                 totalCarbs: breakfast.carbs + lunch.carbs + dinner.carbs + snack.carbs,
                 totalFat: breakfast.fat + lunch.fat + dinner.fat + snack.fat,
                 totalProtein: breakfast.protein + lunch.protein + dinner.protein + snack.protein
+            };
+        }
+        // Helper function to get meal icon based on name and meal type
+        function getMealIcon(name, mealType) {
+            const iconMap = [
+                { key: 'oat|porridge|chia|quinoa|cereal|bowl', icon: '🥣' },
+                { key: 'egg|omelet|scramble', icon: '🍳' },
+                { key: 'salad|greens|bowl', icon: '🥗' },
+                { key: 'fish|salmon|tuna|cod', icon: '🐟' },
+                { key: 'chicken|turkey', icon: '🍗' },
+                { key: 'pasta|noodle', icon: '🍝' },
+                { key: 'rice', icon: '🍚' },
+                { key: 'fruit|apple|banana|berries', icon: '🍎' },
+                { key: 'soup|broth', icon: '🍲' },
+                { key: 'sandwich|wrap|burrito', icon: '🌯' },
+                { key: 'pizza|flatbread', icon: '🍕' },
+                { key: 'burger|patty', icon: '🍔' },
+                { key: 'smoothie|shake|drink', icon: '🥤' },
+                { key: 'nuts|almond|walnut|peanut', icon: '🥜' },
+                { key: 'cheese|dairy', icon: '🧀' },
+                { key: 'bread|toast|bagel', icon: '🍞' },
+                { key: 'pancake|waffle', icon: '🥞' },
+                { key: 'yogurt|parfait', icon: '🥛' }
+            ];
+
+            const lower = (name || '').toLowerCase();
+            for (const m of iconMap) {
+                if (new RegExp(m.key).test(lower)) return m.icon;
+            }
+
+            // Default icons by meal type
+            const defaults = {
+                breakfast: '🌅',
+                lunch: '🌞', 
+                dinner: '🌙',
+                snacks: '🍎'
+            };
+            return defaults[mealType] || '🍽️';
+        }
+
+        // Convert minimal AI plan to the UI structure with icons and macro placeholders
+        function aiPlanToUiPlan(ai) {
+            // Provide simple macros so existing UI renders nicely
+            const mk = (m, fallbackIcon) => ({
+                name: m.name,
+                calories: parseInt(m.calories, 10) || 0,
+                icon: getMealIcon(m.name, ''),
+                carbs: 0,
+                fat: 0,
+                protein: 0
+            });
+
+            const breakfast = mk(ai.breakfast || { name: 'Breakfast', calories: 0 }, '🌅');
+            const lunch = mk(ai.lunch || { name: 'Lunch', calories: 0 }, '🌞');
+            const dinner = mk(ai.dinner || { name: 'Dinner', calories: 0 }, '🌙');
+            const snacks = Array.isArray(ai.snacks) && ai.snacks.length ? ai.snacks.map(s => mk(s, '🍎')) : [mk({ name: 'Snack', calories: 0 }, '🍎')];
+
+            const totalCalories = [breakfast, lunch, dinner, ...snacks].reduce((s, x) => s + (x.calories || 0), 0);
+            return {
+                breakfast,
+                lunch,
+                dinner,
+                snacks,
+                totalCalories,
+                totalCarbs: 0,
+                totalFat: 0,
+                totalProtein: 0
             };
         }
 
@@ -1087,14 +1196,55 @@
             `;
         }
 
-        // Load weekly meal plan
-        function loadWeekMealPlan() {
-            document.getElementById('daysGrid').innerHTML = '<div class="loading">Loading weekly meal plan...</div>';
+        // Load weekly meal plan with AI
+        async function loadWeekMealPlan() {
+            document.getElementById('daysGrid').innerHTML = '<div class="loading">🤖 Generating AI weekly meal plan...</div>';
             
-            setTimeout(() => {
+            try {
+                // Get current user data
+                const bmi = parseFloat((document.getElementById('bmiValue').textContent || '').replace(/[^0-9.]/g, '')) || null;
+                const goalWeight = parseFloat((document.getElementById('goalWeight').textContent || '').replace(/[^0-9.]/g, '')) || null;
+                const dietPreference = (document.getElementById('dietType').textContent || userDiet || 'Vegan').trim();
+                const calorieLimitText = document.getElementById('calorieLimit').textContent || '';
+                const calorieLimit = parseInt(calorieLimitText.replace(/[^0-9]/g, ''), 10) || calorieTarget || 1600;
+
+                // Generate 7 different AI meal plans for the week
+                const weekPlan = {};
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                
+                for (const day of days) {
+                    try {
+                        const resp = await fetch(`${API_BASE}/ai-meal-plan`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ bmi, goalWeight, dietPreference, calorieLimit })
+                        });
+                        
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            const plan = data?.plan;
+                            if (plan && plan.breakfast && plan.lunch && plan.dinner && Array.isArray(plan.snacks)) {
+                                weekPlan[day] = aiPlanToUiPlan(plan);
+                            } else {
+                                throw new Error('Invalid AI plan');
+                            }
+                        } else {
+                            throw new Error('API failed');
+                        }
+                    } catch (e) {
+                        // Fallback to local generation for this day
+                        weekPlan[day] = generateDailyMealPlan(userDiet);
+                    }
+                }
+                
+                displayWeekMealPlan(weekPlan);
+                showSuccessMessage(`🤖 AI-generated weekly ${dietPreference} meal plan created!`);
+            } catch (e) {
+                console.warn('AI weekly plan failed; using local fallback:', e.message || e);
                 const weekPlan = generateWeeklyMealPlan(userDiet);
                 displayWeekMealPlan(weekPlan);
-            }, 800);
+                showMessage('AI unavailable. Showing local weekly plan.', 'warning');
+            }
         }
 
         // Generate weekly meal plan
@@ -1136,50 +1286,127 @@
         }
 
         // Regenerate meals
-        function regenerateMeals() {
+        async function regenerateMeals() {
             const button = document.querySelector('.regenerate-btn');
             const originalHTML = button.innerHTML;
             
-            button.innerHTML = 'Generating...';
+            button.innerHTML = 'Generating AI Plan...';
             button.disabled = true;
             
-            setTimeout(() => {
-                loadMealPlan();
+            // Show loading message
+            const container = currentView === 'day' ? document.getElementById('mealSections') : document.getElementById('daysGrid');
+            container.innerHTML = '<div class="loading">🤖 Generating your personalized AI meal plan...</div>';
+            
+            try {
+                await loadMealPlan();
+            } catch (e) {
+                console.warn('Regenerate failed:', e);
+            } finally {
                 button.innerHTML = originalHTML;
                 button.disabled = false;
-            }, 1200);
+            }
         }
 
-        // Refresh individual meal section
-        function refreshMealSection(mealType) {
-            const meals = mealDatabase[userDiet] || mealDatabase['Vegan'];
-            
-            if (currentMealPlan && meals[mealType]) {
-                const newMeal = meals[mealType][Math.floor(Math.random() * meals[mealType].length)];
-                
+        // Refresh individual meal section with AI
+        async function refreshMealSection(mealType) {
+            try {
+                // Get current user data
+                const bmi = parseFloat((document.getElementById('bmiValue').textContent || '').replace(/[^0-9.]/g, '')) || null;
+                const goalWeight = parseFloat((document.getElementById('goalWeight').textContent || '').replace(/[^0-9.]/g, '')) || null;
+                const dietPreference = (document.getElementById('dietType').textContent || userDiet || 'Vegan').trim();
+                const calorieLimitText = document.getElementById('calorieLimit').textContent || '';
+                const calorieLimit = parseInt(calorieLimitText.replace(/[^0-9]/g, ''), 10) || calorieTarget || 1600;
+
+                // Show loading state
+                const mealSection = document.querySelector(`[onclick*="${mealType}"]`).closest('.meal-section');
+                const originalContent = mealSection.innerHTML;
+                mealSection.innerHTML = '<div class="loading">🤖 Generating new AI option...</div>';
+
+                // Call AI API for new meal
+                const resp = await fetch(`${API_BASE}/ai-meal-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bmi, goalWeight, dietPreference, calorieLimit })
+                });
+
+                if (!resp.ok) throw new Error('Failed to fetch AI meal');
+                const data = await resp.json();
+                const plan = data?.plan;
+
+                if (!plan || !plan.breakfast || !plan.lunch || !plan.dinner || !Array.isArray(plan.snacks)) {
+                    throw new Error('Malformed AI plan');
+                }
+
+                // Get the specific meal type from AI response
+                let newMeal;
+                if (mealType === 'snacks') {
+                    newMeal = plan.snacks[0] || { name: 'AI Snack', calories: 150 };
+                } else {
+                    newMeal = plan[mealType] || { name: `AI ${mealType}`, calories: 400 };
+                }
+
+                // Convert to UI format with icon
+                const withIcon = {
+                    name: newMeal.name,
+                    calories: parseInt(newMeal.calories, 10) || 400,
+                    icon: getMealIcon(newMeal.name, mealType),
+                    carbs: 0,
+                    fat: 0,
+                    protein: 0
+                };
+
                 // Update current meal plan
                 if (mealType === 'snacks') {
-                    currentMealPlan.snacks = [newMeal];
+                    currentMealPlan.snacks = [withIcon];
                 } else {
-                    currentMealPlan[mealType] = newMeal;
+                    currentMealPlan[mealType] = withIcon;
                 }
-                
+
                 // Recalculate totals
                 const breakfast = currentMealPlan.breakfast;
                 const lunch = currentMealPlan.lunch;
                 const dinner = currentMealPlan.dinner;
                 const snack = currentMealPlan.snacks[0];
-                
+
                 currentMealPlan.totalCalories = breakfast.calories + lunch.calories + dinner.calories + snack.calories;
                 currentMealPlan.totalCarbs = breakfast.carbs + lunch.carbs + dinner.carbs + snack.carbs;
                 currentMealPlan.totalFat = breakfast.fat + lunch.fat + dinner.fat + snack.fat;
                 currentMealPlan.totalProtein = breakfast.protein + lunch.protein + dinner.protein + snack.protein;
-                
+
                 // Update display
                 displayDayMealPlan(currentMealPlan);
                 updateNutritionChart(currentMealPlan);
-                
-                showToast(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} refreshed!`);
+
+                showToast(`🤖 New AI ${mealType} generated!`);
+            } catch (e) {
+                console.warn('AI meal refresh failed; using local fallback:', e.message || e);
+                // Fallback to local random selection
+                const meals = mealDatabase[userDiet] || mealDatabase['Vegan'];
+                if (currentMealPlan && meals[mealType]) {
+                    const newMeal = meals[mealType][Math.floor(Math.random() * meals[mealType].length)];
+                    
+                    if (mealType === 'snacks') {
+                        currentMealPlan.snacks = [newMeal];
+                    } else {
+                        currentMealPlan[mealType] = newMeal;
+                    }
+                    
+                    // Recalculate totals
+                    const breakfast = currentMealPlan.breakfast;
+                    const lunch = currentMealPlan.lunch;
+                    const dinner = currentMealPlan.dinner;
+                    const snack = currentMealPlan.snacks[0];
+                    
+                    currentMealPlan.totalCalories = breakfast.calories + lunch.calories + dinner.calories + snack.calories;
+                    currentMealPlan.totalCarbs = breakfast.carbs + lunch.carbs + dinner.carbs + snack.carbs;
+                    currentMealPlan.totalFat = breakfast.fat + lunch.fat + dinner.fat + snack.fat;
+                    currentMealPlan.totalProtein = breakfast.protein + lunch.protein + dinner.protein + snack.protein;
+                    
+                    displayDayMealPlan(currentMealPlan);
+                    updateNutritionChart(currentMealPlan);
+                    
+                    showToast(`${mealType.charAt(0).toUpperCase() + mealType.slice(1)} refreshed (local fallback)!`);
+                }
             }
         }
 

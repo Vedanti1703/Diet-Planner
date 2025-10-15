@@ -182,6 +182,26 @@
             box-shadow: 0 5px 15px rgb(44 128 180 / 0.6);
         }
 
+        /* Quick question buttons */
+        .quick-question-btn {
+            background-color: #f8f9fa;
+            border: 1.5px solid #e9ecef;
+            color: #495057;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .quick-question-btn:hover {
+            background-color: #e9ecef;
+            border-color: #3498db;
+            color: #3498db;
+            transform: translateY(-1px);
+        }
+
         /* Autocomplete overrides */
         .ui-autocomplete {
             max-height: 180px;
@@ -258,12 +278,24 @@
 
         <div class="chat-box">
             <h2>💡 Ask Me Anything</h2>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
+                I'm your personal AI nutrition and fitness coach! I can help with meal planning, exercise advice, and health tracking. 
+                <span id="personalizationStatus" style="color: #27ae60; font-weight: 600;"></span>
+            </p>
 
             <div class="messages" id="messages" aria-live="polite" aria-relevant="additions"></div>
 
             <div class="input-area">
                 <input type="text" id="userInput" placeholder="Type your question..." aria-label="Chat input" autocomplete="off" />
                 <button aria-label="Send message" onclick="sendMessage()">Send</button>
+            </div>
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="askQuickQuestion('How to lose stomach fat?')" class="quick-question-btn">🔥 Lose Belly Fat</button>
+                <button onclick="askQuickQuestion('What should I eat for breakfast?')" class="quick-question-btn">🍳 Breakfast Ideas</button>
+                <button onclick="askQuickQuestion('How can I lose weight safely?')" class="quick-question-btn">⚖️ Weight Loss</button>
+                <button onclick="askQuickQuestion('What exercises should I do?')" class="quick-question-btn">🏃‍♀️ Exercise Tips</button>
+                <button onclick="askQuickQuestion('How much protein do I need?')" class="quick-question-btn">🥩 Protein Guide</button>
             </div>
         </div>
     </div>
@@ -277,25 +309,7 @@
                 $('.faq-answer').not($(this).next()).slideUp();
             });
 
-            // Autocomplete Suggestions
-            const questions = [
-                "What is the best diet to lose weight?",
-                "Are vegan diets effective?",
-                "Is gluten-free always healthier?",
-                "How does the calorie generator work?",
-                "Should I exercise daily?",
-                "What is a keto diet?",
-                "How many calories should I eat?",
-                "Can I gain muscle on a vegetarian diet?",
-                "Are cheat meals okay?",
-                "How do I track my calories?"
-            ];
-
-            $("#userInput").autocomplete({
-                source: questions,
-                delay: 100,
-                minLength: 1
-            });
+            // Autocomplete will be initialized in initChat() with personalized suggestions
         });
 
         // Chat history helpers
@@ -335,6 +349,9 @@
             if (/vegan/.test(q)) return facts.vegan;
             if (/gluten[- ]?free|gluten/.test(q)) return facts.gluten;
             if (/lose weight|weight loss/.test(q)) return facts.weightLoss;
+            if (/lose\s*stomach\s*fat|belly\s*fat|abdominal\s*fat|lose\s*belly/.test(q)) {
+                return 'To lose stomach fat: 1) Create a calorie deficit (300-500 calories below maintenance), 2) Do cardio 3-4x/week (30-45 min), 3) Strength training 2-3x/week, 4) Eat high protein (1.2-2g per kg body weight), 5) Reduce processed foods and sugar, 6) Get 7-9 hours sleep, 7) Manage stress. Note: You can\'t spot-reduce fat, but these strategies help overall fat loss including the stomach area.';
+            }
             // diet ideas using simple inline samples
             const ideas = {
                 vegan: ['Quinoa Bowl', 'Chickpea Salad', 'Tofu Buddha Bowl'],
@@ -353,21 +370,98 @@
         }
 
         async function getBotReply(userText, history) {
-            // Try backend AI first
+            // Get user profile and health data for personalization
+            const userProfile = getUserProfile();
+            const healthData = getHealthData();
+            
+            // Try backend AI first with enhanced context
             try {
                 const res = await fetch(`${API_BASE}/ai/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText, history })
+                    body: JSON.stringify({ 
+                        message: userText, 
+                        history,
+                        userProfile,
+                        healthData
+                    })
                 });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.reply) return data.reply;
                 }
-            } catch (e) { /* fallback below */ }
+            } catch (e) { 
+                console.warn('AI chat failed, using fallback:', e);
+            }
 
             // Fallback: local mini-answer
             return localAnswer(userText);
+        }
+
+        function getUserProfile() {
+            // Get user profile from localStorage
+            const profile = {};
+            
+            // Try to get from user preferences
+            const dietType = localStorage.getItem('diet') || localStorage.getItem('dietType');
+            if (dietType) profile.dietType = dietType;
+            
+            const height = parseFloat(localStorage.getItem('height') || localStorage.getItem('heightCm'));
+            if (height) profile.height = height;
+            
+            const weight = parseFloat(localStorage.getItem('weight') || localStorage.getItem('weightKg'));
+            if (weight) profile.weight = weight;
+            
+            const goalWeight = parseFloat(localStorage.getItem('goal') || localStorage.getItem('goalWeight'));
+            if (goalWeight) profile.goalWeight = goalWeight;
+            
+            const calorieTarget = parseInt(localStorage.getItem('calorieLimit') || localStorage.getItem('calorieTarget'));
+            if (calorieTarget) profile.calorieTarget = calorieTarget;
+            
+            const age = parseInt(localStorage.getItem('age'));
+            if (age) profile.age = age;
+            
+            const gender = localStorage.getItem('gender');
+            if (gender) profile.gender = gender;
+            
+            return profile;
+        }
+
+        function getHealthData() {
+            // Get recent health data from localStorage
+            const healthData = {};
+            
+            try {
+                // Try to get health logs
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                const userId = user?.id || user?.email || 'guest';
+                const healthLogsKey = `healthLogs:${userId}`;
+                const logs = JSON.parse(localStorage.getItem(healthLogsKey) || '[]');
+                
+                if (logs.length > 0) {
+                    const latest = logs[logs.length - 1];
+                    const recentLogs = logs.slice(-7); // Last week
+                    
+                    healthData.recentWeight = latest.weight;
+                    healthData.avgExercise = recentLogs.reduce((sum, log) => sum + (log.exercise || 0), 0) / recentLogs.length;
+                    healthData.avgSleep = recentLogs.reduce((sum, log) => sum + (log.sleep || 0), 0) / recentLogs.length;
+                    healthData.avgCalories = recentLogs.reduce((sum, log) => sum + (log.calories || 0), 0) / recentLogs.length;
+                    
+                    // Analyze mood patterns
+                    const moodCounts = {};
+                    recentLogs.forEach(log => {
+                        if (log.mood) {
+                            moodCounts[log.mood] = (moodCounts[log.mood] || 0) + 1;
+                        }
+                    });
+                    const dominantMood = Object.keys(moodCounts).reduce((a, b) => moodCounts[a] > moodCounts[b] ? a : b, 'Neutral');
+                    healthData.dominantMood = dominantMood;
+                }
+            } catch (e) {
+                console.warn('Could not load health data:', e);
+            }
+            
+            return healthData;
         }
 
         async function sendMessage() {
@@ -405,14 +499,104 @@
             }
         });
 
+        // Quick question function
+        function askQuickQuestion(question) {
+            const input = document.getElementById('userInput');
+            input.value = question;
+            sendMessage();
+        }
+
+        // Update personalization status
+        function updatePersonalizationStatus() {
+            const statusEl = document.getElementById('personalizationStatus');
+            const userProfile = getUserProfile();
+            const healthData = getHealthData();
+            
+            let statusText = '';
+            if (userProfile.dietType) {
+                statusText += `I know you prefer ${userProfile.dietType} diet. `;
+            }
+            if (userProfile.height && userProfile.weight) {
+                const bmi = (userProfile.weight / ((userProfile.height / 100) ** 2)).toFixed(1);
+                statusText += `Your BMI is ${bmi}. `;
+            }
+            if (healthData.recentWeight) {
+                statusText += `I can see your recent health data. `;
+            }
+            
+            if (statusText) {
+                statusEl.textContent = statusText;
+            } else {
+                statusEl.textContent = 'Set up your profile for personalized advice!';
+                statusEl.style.color = '#e74c3c';
+            }
+        }
+
+        // Enhanced autocomplete with more suggestions
+        function updateAutocompleteSuggestions() {
+            const userProfile = getUserProfile();
+            const suggestions = [
+                "How to lose stomach fat?",
+                "How to lose belly fat?",
+                "What is the best diet to lose weight?",
+                "How can I burn fat effectively?",
+                "What exercises burn the most calories?",
+                "How to get abs?",
+                "Are vegan diets effective?",
+                "Is gluten-free always healthier?",
+                "How does the calorie generator work?",
+                "Should I exercise daily?",
+                "What is a keto diet?",
+                "How many calories should I eat?",
+                "Can I gain muscle on a vegetarian diet?",
+                "Are cheat meals okay?",
+                "How do I track my calories?",
+                "What should I eat for breakfast?",
+                "How can I lose weight safely?",
+                "What exercises should I do?",
+                "How much protein do I need?",
+                "What are good healthy snacks?",
+                "How much water should I drink?",
+                "What's the best time to exercise?",
+                "How do I build muscle?",
+                "What are superfoods?",
+                "How do I meal prep?",
+                "How much sleep do I need?",
+                "What cardio exercises are best?",
+                "How to build core strength?"
+            ];
+
+            // Add personalized suggestions based on user profile
+            if (userProfile.dietType) {
+                suggestions.push(`What are good ${userProfile.dietType.toLowerCase()} meal ideas?`);
+                suggestions.push(`How to follow ${userProfile.dietType.toLowerCase()} diet?`);
+            }
+            if (userProfile.goalWeight) {
+                suggestions.push(`How to reach my goal weight of ${userProfile.goalWeight}kg?`);
+            }
+
+            return suggestions;
+        }
+
         // Load previous messages on startup
         (function initChat() {
             const history = loadHistory();
             if (history.length) {
                 history.forEach(turn => appendMessage(turn.content, turn.role === 'user' ? 'user' : 'bot'));
             } else {
-                appendMessage('Hi! Ask me anything about diets, nutrition, or fitness.', 'bot');
+                appendMessage('Hi! I\'m your personal AI nutrition and fitness coach! 🎯 I can help you with meal planning, exercise advice, and health tracking. What would you like to know?', 'bot');
             }
+            
+            // Update personalization status
+            updatePersonalizationStatus();
+            
+            // Update autocomplete suggestions
+            const suggestions = updateAutocompleteSuggestions();
+            $("#userInput").autocomplete({
+                source: suggestions,
+                delay: 100,
+                minLength: 1
+            });
         })();
     </script>
 </body>
