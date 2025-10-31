@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Diet Planner</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px 0;
+    }
+
+    .form-container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      width: 380px;
+      max-width: 90%;
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4caf50;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    .error {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .success {
+      color: #27ae60;
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 10px 0;
+      padding: 10px;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 5px;
+    }
+
+    .info {
+      color: #2e7d32;
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 15px 0;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .secondary-btn {
+      background-color: #ff9800;
+      margin-top: 5px;
+    }
+
+    .secondary-btn:hover:not(:disabled) {
+      background-color: #f57c00;
+    }
+
+    .danger-btn {
+      background-color: #e74c3c;
+      margin-top: 5px;
+    }
+
+    .danger-btn:hover:not(:disabled) {
+      background-color: #c0392b;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #4caf50;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+      color: #666;
+    }
+
+    .loading::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #4caf50;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .current-user-section {
+      display: none;
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+    }
+
+    .current-user-name {
+      font-weight: bold;
+      color: #856404;
+      margin-bottom: 10px;
+    }
+
+    .switch-account-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .switch-account-buttons button {
+      width: auto;
+      padding: 8px 16px;
+      margin: 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>🍽️ Create Account</h2>
+    
+    <!-- Current User Section -->
+    <div class="current-user-section" id="currentUserSection">
+      <div class="current-user-name" id="currentUserName">Currently logged in as: User</div>
+      <div style="margin-bottom: 10px; color: #856404; font-size: 14px;">
+        You're already logged in. What would you like to do?
+      </div>
+      <div class="switch-account-buttons">
+        <button type="button" class="secondary-btn" onclick="continueAsCurrentUser()">
+          Go to Dashboard
+        </button>
+        <button type="button" class="danger-btn" onclick="switchAccount()">
+          Create Different Account
+        </button>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">Creating your account...</div>
+    <div class="success" id="successMsg" style="display: none;"></div>
+    <div class="info" id="infoMsg" style="display: none;"></div>
+    
+    <form id="signupForm">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" required>
+        <span class="error" id="nameError"></span>
+      </div>
+      
+      <div class="form-group">
+        <label for="dob">Date of Birth</label>
+        <input type="date" id="dob" required>
+        <span class="error" id="dobError"></span>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" required>
+        <span class="error" id="emailError"></span>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+        <span class="error" id="passwordError"></span>
+      </div>
+      
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" required>
+        <span class="error" id="confirmError"></span>
+      </div>
+      
+      <button type="submit" id="signupBtn">Sign Up</button>
+    </form>
+    
+    <div class="footer">
+      Already have an account? <a href="login.html">Login here</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    const signupForm = document.getElementById('signupForm');
+    const signupBtn = document.getElementById('signupBtn');
+    const loading = document.getElementById('loading');
+    const successMsg = document.getElementById('successMsg');
+    const infoMsg = document.getElementById('infoMsg');
+    const currentUserSection = document.getElementById('currentUserSection');
+    const currentUserName = document.getElementById('currentUserName');
+
+    // Keys for local signup persistence (never store passwords!)
+    const SIGNUP_KEYS = {
+      name: 'signup_name',
+      dob: 'signup_dob',
+      email: 'signup_email',
+      lastAt: 'lastSignupAt'
+    };
+
+    // Prefill from localStorage on load
+    (function prefillSignupFields() {
+      try {
+        const savedName = localStorage.getItem(SIGNUP_KEYS.name);
+        const savedDob = localStorage.getItem(SIGNUP_KEYS.dob);
+        const savedEmail = localStorage.getItem(SIGNUP_KEYS.email);
+        if (savedName) document.getElementById('name').value = savedName;
+        if (savedDob) document.getElementById('dob').value = savedDob;
+        if (savedEmail) document.getElementById('email').value = savedEmail;
+      } catch (_) {}
+    })();
+
+    // Save changes as user types (debounced light)
+    function persistField(id, key) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', (e) => {
+        try { localStorage.setItem(key, e.target.value.trim()); } catch (_) {}
+      });
+    }
+    persistField('name', SIGNUP_KEYS.name);
+    persistField('dob', SIGNUP_KEYS.dob);
+    persistField('email', SIGNUP_KEYS.email);
+
+    // Check if user is already logged in and show options
+    function checkCurrentUser() {
+      const authToken = localStorage.getItem('authToken');
+      const userInfo = localStorage.getItem('user');
+      
+      if (authToken && userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          const userName = user.name || 'User';
+          
+          // Show current user section
+          currentUserName.textContent = `Currently logged in as: ${userName}`;
+          currentUserSection.style.display = 'block';
+          signupForm.style.display = 'none';
+          
+          infoMsg.innerHTML = `<strong>Hi ${userName}!</strong><br>You're already logged in. Choose an option below.`;
+          infoMsg.style.display = 'block';
+          infoMsg.style.background = '#fff3cd';
+          infoMsg.style.borderColor = '#ffeaa7';
+          infoMsg.style.color = '#856404';
+          
+          return true;
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          // Clear corrupted data
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        }
+      }
+      
+      return false;
+    }
+
+    // Continue as current user
+    function continueAsCurrentUser() {
+      successMsg.textContent = '✅ Redirecting to dashboard...';
+      successMsg.style.display = 'block';
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    }
+
+    // Switch to create different account
+    function switchAccount() {
+      // Clear current user data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('diet');
+      localStorage.removeItem('bmi');
+      localStorage.removeItem('goal');
+      localStorage.removeItem('goalWeight');
+      localStorage.removeItem('calorieLimit');
+      localStorage.removeItem('tempDiet');
+      // Also clear any persisted signup fields
+      try {
+        localStorage.removeItem(SIGNUP_KEYS.name);
+        localStorage.removeItem(SIGNUP_KEYS.dob);
+        localStorage.removeItem(SIGNUP_KEYS.email);
+      } catch (_) {}
+      
+      // Hide current user section and show signup form
+      currentUserSection.style.display = 'none';
+      signupForm.style.display = 'block';
+      infoMsg.style.display = 'none';
+      
+      // Clear form
+      document.getElementById('name').value = '';
+      document.getElementById('dob').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('confirmPassword').value = '';
+      
+      // Show switch account message
+      infoMsg.innerHTML = '✅ <strong>Account switched!</strong><br>You can now create a new account with different details.';
+      infoMsg.style.display = 'block';
+      infoMsg.style.background = '#d4edda';
+      infoMsg.style.borderColor = '#c3e6cb';
+      infoMsg.style.color = '#155724';
+      
+      // Focus on name input
+      document.getElementById('name').focus();
+      
+      // Hide the message after 3 seconds
+      setTimeout(() => {
+        infoMsg.style.display = 'none';
+      }, 3000);
+    }
+
+    // Signup form submission
+    signupForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Clear previous errors and success message
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+      successMsg.style.display = 'none';
+      infoMsg.style.display = 'none';
+      
+      const name = document.getElementById('name').value.trim();
+      const dob = document.getElementById('dob').value;
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      let isValid = true;
+      
+      // Validation
+      if (name.length < 2) {
+        document.getElementById('nameError').textContent = 'Enter your full name.';
+        isValid = false;
+      }
+      
+      if (!dob) {
+        document.getElementById('dobError').textContent = 'Please select your date of birth.';
+        isValid = false;
+      }
+      
+      if (!email.includes('@') || !email.includes('.')) {
+        document.getElementById('emailError').textContent = 'Enter a valid email address.';
+        isValid = false;
+      }
+      
+      if (password.length < 6) {
+        document.getElementById('passwordError').textContent = 'Password must be at least 6 characters.';
+        isValid = false;
+      }
+      
+      if (password !== confirmPassword) {
+        document.getElementById('confirmError').textContent = 'Passwords do not match.';
+        isValid = false;
+      }
+      
+      if (!isValid) return;
+      
+      // Show loading
+      loading.style.display = 'block';
+      signupBtn.disabled = true;
+      signupBtn.textContent = 'Creating Account...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, email, password, dob })
+        });
+        
+        // Parse response safely (handle empty/non-JSON)
+        let data;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = {};
+        }
+        
+        if (response.ok) {
+          // Success - save token and user info
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          try {
+            localStorage.setItem(SIGNUP_KEYS.lastAt, new Date().toISOString());
+            localStorage.setItem('lastSignupEmail', data?.user?.email || email);
+          } catch (_) {}
+          
+          successMsg.textContent = `✅ Welcome ${data.user.name}! Account created successfully!`;
+          successMsg.style.display = 'block';
+          
+          // Hide form
+          signupForm.style.display = 'none';
+          
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+          
+        } else {
+          // Error from server
+          if (response.status === 409) {
+            document.getElementById('emailError').textContent = 'Email already registered. Try logging in.';
+          } else {
+            throw new Error(data.error || 'Sign up failed');
+          }
+        }
+        
+      } catch (error) {
+        console.error('Signup error:', error);
+        
+        // Show specific error message
+        if (error.message.includes('Network')) {
+          document.getElementById('emailError').textContent = 'Network error. Please check your connection.';
+        } else if (error.message.includes('fetch')) {
+          document.getElementById('emailError').textContent = 'Server not reachable. Please make sure the server is running on http://localhost:3000';
+        } else {
+          document.getElementById('emailError').textContent = error.message || 'Sign up failed. Please try again.';
+        }
+      } finally {
+        // Hide loading
+        loading.style.display = 'none';
+        signupBtn.disabled = false;
+        signupBtn.textContent = 'Sign Up';
+      }
+    });
+
+    // Password confirmation live validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const password = document.getElementById('password').value;
+      const confirmPassword = this.value;
+      const errorEl = document.getElementById('confirmError');
+      
+      if (confirmPassword && password !== confirmPassword) {
+        errorEl.textContent = 'Passwords do not match.';
+      } else {
+        errorEl.textContent = '';
+      }
+    });
+
+    // Initialize page
+    window.addEventListener('load', () => {
+      // Check if user is already logged in
+      if (!checkCurrentUser()) {
+        // No user logged in, focus on name input
+        document.getElementById('name').focus();
+        
+        // Test server connection
+        fetch(`${API_BASE}/`, { method: 'GET' })
+          .then(response => {
+            if (!response.ok) throw new Error('Server not responding');
+            console.log('✅ Server connection OK');
+          })
+          .catch(error => {
+            console.error('⚠️ Server connection failed:', error);
+            document.getElementById('emailError').textContent = '⚠️ Server not running. Please start the server (node server.js) and refresh.';
+          });
+      }
+
+      // Set max date to today (13+ age validation)
+      const today = new Date();
+      const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+      document.getElementById('dob').max = maxDate.toISOString().split('T')[0];
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat Bot – Diet Planner</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+    <script src="frontend-integration.js"></script>
+
+    <style>
+        /* Chatbot-specific styles */
+        /* Base styles are now mostly handled by style.css, but keep body padding here */
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Ensure consistent font */
+            background: #f0f4f8;
+            /* Chatbot page specific background */
+            margin: 0;
+            padding-top: 80px;
+            /* IMPORTANT: Space for fixed header, adjust if header height changes */
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;
+            color: #333;
+        }
+        
+        h1 {
+            /* Title below header */
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 35px;
+            color: #2c3e50;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chat-container {
+            max-width: 720px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px 35px;
+        }
+        /* FAQ section */
+        
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        
+        .faq-question {
+            background-color: #d6eaf8;
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 14px 20px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.08);
+        }
+        
+        .faq-question:hover {
+            background-color: #aed6f1;
+        }
+        
+        .faq-answer {
+            display: none;
+            background-color: #e9f7ef;
+            border-left: 5px solid #27ae60;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: #2d6a4f;
+            box-shadow: 0 1px 5px rgb(0 0 0 / 0.06);
+        }
+        /* Chat box */
+        
+        .chat-box {
+            margin-top: 40px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 30px;
+        }
+        
+        .messages {
+            height: 320px;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #d1d9e6;
+            box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.05);
+            scroll-behavior: smooth;
+            /* The path is 'image/' (singular) because that is your folder's name */
+            background-image: url('public/images/chatbg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .messages::-webkit-scrollbar-track {
+            background: #f0f4f8;
+            border-radius: 10px;
+        }
+        
+        .messages::-webkit-scrollbar-thumb {
+            background-color: #a3b1c6;
+            border-radius: 10px;
+        }
+        
+        .message {
+            margin: 10px 0;
+            max-width: 75%;
+            line-height: 1.4;
+            padding: 12px 18px;
+            border-radius: 20px;
+            position: relative;
+            font-size: 1rem;
+            word-wrap: break-word;
+        }
+        
+        .user {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .bot {
+            background: #2ecc71;
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 3px 8px rgba(46, 204, 113, 0.3);
+        }
+        
+        .message strong {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+        /* Input area */
+        
+        .input-area {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .input-area input {
+            flex-grow: 1;
+            padding: 14px 18px;
+            font-size: 1rem;
+            border-radius: 30px;
+            border: 1.8px solid #ccc;
+            transition: border-color 0.3s ease;
+            outline-offset: 2px;
+        }
+        
+        .input-area input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 6px #3498dbaa;
+        }
+        
+        .input-area button {
+            background-color: #3498db;
+            border: none;
+            color: white;
+            padding: 0 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.25s ease;
+            box-shadow: 0 4px 12px rgb(52 152 219 / 0.4);
+        }
+        
+        .input-area button:hover {
+            background-color: #2c80b4;
+            box-shadow: 0 5px 15px rgb(44 128 180 / 0.6);
+        }
+        /* Quick question buttons */
+        
+        .quick-question-btn {
+            background-color: #f8f9fa;
+            border: 1.5px solid #e9ecef;
+            color: #495057;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .quick-question-btn:hover {
+            background-color: #e9ecef;
+            border-color: #3498db;
+            color: #3498db;
+            transform: translateY(-1px);
+        }
+        /* Autocomplete overrides */
+        
+        .ui-autocomplete {
+            max-height: 180px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+            font-size: 15px;
+            background-color: #fff;
+            border: 1.5px solid #3498db;
+            border-radius: 6px;
+            z-index: 10000 !important;
+            box-shadow: 0 5px 10px rgb(52 152 219 / 0.3);
+        }
+        /* Responsive */
+        
+        @media (max-width: 480px) {
+            .chat-container {
+                padding: 20px;
+            }
+            .messages {
+                height: 240px;
+            }
+            .input-area input {
+                font-size: 0.95rem;
+            }
+            .input-area button {
+                font-size: 1rem;
+                padding: 0 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-title">
+            <img src="image/logo.png" alt="Logo">
+            <h1>Diet Planner</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="summary.html">Summary</a></li>
+                <li><a href="healthtracker.html">Health Tracker</a></li>
+                <li><a href="chatbot.html">Chat Bot</a></li>
+                <li id="authSection"> <a href="landing.html">Logout</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <h1>Chat Bot – Diet Planner</h1>
+
+    <div class="chat-container">
+
+        <h2>💬 Frequently Asked Questions</h2>
+        <p style="color: #555; font-style: italic;">Click on a question to see the answer:</p>
+
+        <div class="faq-question">🧐 What is the best diet to lose weight?</div>
+        <div class="faq-answer">A sustainable calorie deficit diet with balanced nutrition is best. Explore our customized plan!</div>
+
+        <div class="faq-question">🥗 Are vegan diets effective?</div>
+        <div class="faq-answer">Yes, as long as you meet your protein and nutrient requirements like B12 and iron.</div>
+
+        <div class="faq-question">🍞 Is gluten-free always healthier?</div>
+        <div class="faq-answer">Not always. It's essential for people with celiac disease or gluten sensitivity. Others can enjoy gluten safely.</div>
+
+        <div class="faq-question">📊 How does the calorie generator work?</div>
+        <div class="faq-answer">It uses your height, weight, and goal to calculate an estimated daily calorie intake.</div>
+
+        <div class="faq-question">🏋️‍♂️ Should I exercise daily?</div>
+        <div class="faq-answer">Aim for 3–5 days/week. Rest days are important too!</div>
+
+        <div class="chat-box">
+            <h2>💡 Ask Me Anything</h2>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
+                I'm your personal AI nutrition and fitness coach! I can help with meal planning, exercise advice, and health tracking.
+                <span id="personalizationStatus" style="color: #27ae60; font-weight: 600;"></span>
+            </p>
+
+            <div class="messages" id="messages" aria-live="polite" aria-relevant="additions"></div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type your question..." aria-label="Chat input" autocomplete="off" />
+                <button aria-label="Send message" onclick="sendMessage()">Send</button>
+            </div>
+
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="askQuickQuestion('How to lose stomach fat?')" class="quick-question-btn">🔥 Lose Belly Fat</button>
+                <button onclick="askQuickQuestion('What should I eat for breakfast?')" class="quick-question-btn">🍳 Breakfast Ideas</button>
+                <button onclick="askQuickQuestion('How can I lose weight safely?')" class="quick-question-btn">⚖️ Weight Loss</button>
+                <button onclick="askQuickQuestion('What exercises should I do?')" class="quick-question-btn">🏃‍♀️ Exercise Tips</button>
+                <button onclick="askQuickQuestion('How much protein do I need?')" class="quick-question-btn">🥩 Protein Guide</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        // FAQ toggle
+        $(document).ready(function() {
+            $('.faq-question').click(function() {
+                $(this).next('.faq-answer').slideToggle();
+                $('.faq-answer').not($(this).next()).slideUp();
+            });
+
+            // Autocomplete will be initialized in initChat() with personalized suggestions
+        });
+
+        // Chat history helpers
+        const CHAT_HISTORY_KEY = 'chat_history_dynamic';
+
+        function loadHistory() {
+            try {
+                return JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function saveHistory(history) {
+            localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history.slice(-20)));
+        }
+
+        function appendMessage(text, sender = 'bot') {
+            const messages = document.getElementById('messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender);
+            msgDiv.textContent = text;
+            messages.appendChild(msgDiv);
+            messages.scrollTop = messages.scrollHeight; // scroll to bottom
+        }
+
+        function localAnswer(text) {
+            const q = String(text || '').toLowerCase();
+            const facts = {
+                bmi: 'BMI = weight(kg) / (height(m)^2). Ranges: <18.5 underweight, 18.5–24.9 normal, 25–29.9 overweight, 30+ obesity.',
+                calories: 'Daily calories depend on age, sex, height, weight, and activity. Start near your current target and adjust ±100–200 kcal based on weekly progress.',
+                protein: 'Aim for ~1.2–2.2 g protein per kg body weight per day depending on goals.',
+                keto: 'Keto is low‑carb, high‑fat. Emphasize meats, fish, eggs, cheese, non‑starchy veg; limit grains and sugars.',
+                vegan: 'Vegan excludes animal products. Emphasize legumes, tofu/tempeh, whole grains, nuts/seeds; consider B12.',
+                gluten: 'Gluten‑free removes wheat, barley, rye. Essential for celiac/sensitivity; not inherently healthier otherwise.',
+                weightLoss: 'For weight loss: modest calorie deficit, sufficient protein and fiber, 2–3x/week strength training, 7–8h sleep, daily steps.'
+            };
+            if (/hello|hi|hey/.test(q)) return 'Hi! How can I help with diets, nutrition, or fitness?';
+            if (/bmi|body mass index/.test(q)) return facts.bmi;
+            if (/calorie|calories/.test(q)) return facts.calories;
+            if (/protein/.test(q)) return facts.protein;
+            if (/keto/.test(q)) return facts.keto;
+            if (/vegan/.test(q)) return facts.vegan;
+            if (/gluten[- ]?free|gluten/.test(q)) return facts.gluten;
+            if (/lose weight|weight loss/.test(q)) return facts.weightLoss;
+            if (/lose\s*stomach\s*fat|belly\s*fat|abdominal\s*fat|lose\s*belly/.test(q)) {
+                return 'To lose stomach fat: 1) Create a calorie deficit (300-500 calories below maintenance), 2) Do cardio 3-4x/week (30-45 min), 3) Strength training 2-3x/week, 4) Eat high protein (1.2-2g per kg body weight), 5) Reduce processed foods and sugar, 6) Get 7-9 hours sleep, 7) Manage stress. Note: You can\'t spot-reduce fat, but these strategies help overall fat loss including the stomach area.';
+            }
+            // diet ideas using simple inline samples
+            const ideas = {
+                vegan: ['Quinoa Bowl', 'Chickpea Salad', 'Tofu Buddha Bowl'],
+                keto: ['Avocado Eggs', 'Keto Caesar', 'Salmon with Asparagus'],
+                vegetarian: ['Veggie Scramble', 'Caprese Salad', 'Eggplant Parmesan'],
+                'gluten-free': ['Quinoa Porridge', 'Rice Veggie Bowl', 'Zoodles with Pesto'],
+                'non-veg': ['Eggs with Salmon', 'Chicken Caesar', 'Chicken Stir Fry']
+            };
+            for (const key of Object.keys(ideas)) {
+                if (q.includes(key)) {
+                    const list = ideas[key];
+                    return `Here are some ${key} ideas: ${list.join(', ')}.`;
+                }
+            }
+            return "I can help with diets, calories, meals, and fitness. Try: 'How many calories should I eat to lose weight?' or 'Give me a vegan lunch idea.'";
+        }
+
+        async function getBotReply(userText, history) {
+            // Get user profile and health data for personalization
+            const userProfile = getUserProfile();
+            const healthData = getHealthData();
+
+            // Try backend AI first with enhanced context
+            try {
+                const res = await fetch(`${API_BASE}/ai/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: userText,
+                        history,
+                        userProfile,
+                        healthData
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.reply) return data.reply;
+                }
+            } catch (e) {
+                console.warn('AI chat failed, using fallback:', e);
+            }
+
+            // Fallback: local mini-answer
+            return localAnswer(userText);
+        }
+
+        function getUserProfile() {
+            // Get user profile from localStorage
+            const profile = {};
+
+            // Try to get from user preferences
+            const dietType = localStorage.getItem('diet') || localStorage.getItem('dietType');
+            if (dietType) profile.dietType = dietType;
+
+            const height = parseFloat(localStorage.getItem('height') || localStorage.getItem('heightCm'));
+            if (height) profile.height = height;
+
+            const weight = parseFloat(localStorage.getItem('weight') || localStorage.getItem('weightKg'));
+            if (weight) profile.weight = weight;
+
+            const goalWeight = parseFloat(localStorage.getItem('goal') || localStorage.getItem('goalWeight'));
+            if (goalWeight) profile.goalWeight = goalWeight;
+
+            const calorieTarget = parseInt(localStorage.getItem('calorieLimit') || localStorage.getItem('calorieTarget'));
+            if (calorieTarget) profile.calorieTarget = calorieTarget;
+
+            const age = parseInt(localStorage.getItem('age'));
+            if (age) profile.age = age;
+
+            const gender = localStorage.getItem('gender');
+            if (gender) profile.gender = gender;
+
+            return profile;
+        }
+
+        function getHealthData() {
+            // Get recent health data from localStorage
+            const healthData = {};
+
+            try {
+                // Try to get health logs
+                // Updated to handle potential null user
+                const userString = localStorage.getItem('user');
+                const user = userString ? JSON.parse(userString) : null;
+                const userId = user ? (user.id || user.email || 'guest') : 'guest';
+                const healthLogsKey = `healthLogs:${userId}`;
+                const logs = JSON.parse(localStorage.getItem(healthLogsKey) || '[]');
+
+                if (logs.length > 0) {
+                    const latest = logs[logs.length - 1];
+                    const recentLogs = logs.slice(-7); // Last week
+
+                    healthData.recentWeight = latest.weight;
+                    healthData.avgExercise = recentLogs.reduce((sum, log) => sum + (log.exercise || 0), 0) / recentLogs.length;
+                    healthData.avgSleep = recentLogs.reduce((sum, log) => sum + (log.sleep || 0), 0) / recentLogs.length;
+                    healthData.avgCalories = recentLogs.reduce((sum, log) => sum + (log.calories || 0), 0) / recentLogs.length;
+
+                    // Analyze mood patterns
+                    const moodCounts = {};
+                    recentLogs.forEach(log => {
+                        if (log.mood) {
+                            moodCounts[log.mood] = (moodCounts[log.mood] || 0) + 1;
+                        }
+                    });
+                    const dominantMood = Object.keys(moodCounts).reduce((a, b) => moodCounts[a] > moodCounts[b] ? a : b, 'Neutral');
+                    healthData.dominantMood = dominantMood;
+                }
+            } catch (e) {
+                console.warn('Could not load health data:', e);
+            }
+
+            return healthData;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            appendMessage(userText, 'user');
+            input.value = '';
+
+            // Show typing placeholder
+            const typing = document.createElement('div');
+            typing.classList.add('message', 'bot');
+            typing.textContent = 'Typing…';
+            const messages = document.getElementById('messages');
+            messages.appendChild(typing);
+            messages.scrollTop = messages.scrollHeight;
+
+            const history = loadHistory();
+            history.push({
+                role: 'user',
+                content: userText
+            });
+            const reply = await getBotReply(userText, history.slice(-10));
+            history.push({
+                role: 'assistant',
+                content: reply
+            });
+            saveHistory(history);
+
+            // Replace typing with reply
+            typing.remove();
+            appendMessage(reply, 'bot');
+        }
+
+        // Optional: allow Enter key to send message
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Quick question function
+        function askQuickQuestion(question) {
+            const input = document.getElementById('userInput');
+            input.value = question;
+            sendMessage();
+        }
+
+        // Update personalization status
+        function updatePersonalizationStatus() {
+            const statusEl = document.getElementById('personalizationStatus');
+            const userProfile = getUserProfile();
+            const healthData = getHealthData();
+
+            let statusText = '';
+            if (userProfile.dietType) {
+                statusText += `I know you prefer ${userProfile.dietType} diet. `;
+            }
+            if (userProfile.height && userProfile.weight) {
+                const bmi = (userProfile.weight / ((userProfile.height / 100) ** 2)).toFixed(1);
+                statusText += `Your BMI is ${bmi}. `;
+            }
+            if (healthData.recentWeight) {
+                statusText += `I can see your recent health data. `;
+            }
+
+            if (statusText) {
+                statusEl.textContent = statusText;
+            } else {
+                statusEl.textContent = 'Set up your profile for personalized advice!';
+                statusEl.style.color = '#e74c3c';
+            }
+        }
+
+        // Enhanced autocomplete with more suggestions
+        function updateAutocompleteSuggestions() {
+            const userProfile = getUserProfile();
+            const suggestions = [
+                "How to lose stomach fat?",
+                "How to lose belly fat?",
+                "What is the best diet to lose weight?",
+                "How can I burn fat effectively?",
+                "What exercises burn the most calories?",
+                "How to get abs?",
+                "Are vegan diets effective?",
+                "Is gluten-free always healthier?",
+                "How does the calorie generator work?",
+                "Should I exercise daily?",
+                "What is a keto diet?",
+                "How many calories should I eat?",
+                "Can I gain muscle on a vegetarian diet?",
+                "Are cheat meals okay?",
+                "How do I track my calories?",
+                "What should I eat for breakfast?",
+                "How can I lose weight safely?",
+                "What exercises should I do?",
+                "How much protein do I need?",
+                "What are good healthy snacks?",
+                "How much water should I drink?",
+                "What's the best time to exercise?",
+                "How do I build muscle?",
+                "What are superfoods?",
+                "How do I meal prep?",
+                "How much sleep do I need?",
+                "What cardio exercises are best?",
+                "How to build core strength?"
+            ];
+
+            // Add personalized suggestions based on user profile
+            if (userProfile.dietType) {
+                suggestions.push(`What are good ${userProfile.dietType.toLowerCase()} meal ideas?`);
+                suggestions.push(`How to follow ${userProfile.dietType.toLowerCase()} diet?`);
+            }
+            if (userProfile.goalWeight) {
+                suggestions.push(`How to reach my goal weight of ${userProfile.goalWeight}kg?`);
+            }
+
+            return suggestions;
+        }
+
+        // Load previous messages on startup
+        (function initChat() {
+            const history = loadHistory();
+            if (history.length) {
+                history.forEach(turn => appendMessage(turn.content, turn.role === 'user' ? 'user' : 'bot'));
+            } else {
+                appendMessage('Hi! I\'m your personal AI nutrition and fitness coach! 🎯 I can help you with meal planning, exercise advice, and health tracking. What would you like to know?', 'bot');
+            }
+
+            // Update personalization status
+            updatePersonalizationStatus();
+
+            // Update autocomplete suggestions
+            const suggestions = updateAutocompleteSuggestions();
+            $("#userInput").autocomplete({
+                source: suggestions,
+                delay: 100,
+                minLength: 1
+            });
+        })();
+    </script>
+</body>
+
+</html>

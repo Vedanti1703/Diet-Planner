@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diet Planner</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="frontend-integration.js"></script>
+
+    <style>
+        #customized-title {
+            color: red;
+        }
+        /* This container is defined but not used in your body,
+      which is why .middle and .right stack vertically. This is correct.
+    */
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px;
+        }
+        
+        .left,
+        .middle,
+        .right {
+            flex: 1;
+            min-width: 280px;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 200px;
+            border: none;
+            margin-bottom: 10px;
+        }
+        /* Enhanced greeting styles */
+        
+        #greeting {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2e7d32;
+            transition: all 0.3s ease;
+        }
+        
+        .greeting-logged-in {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9) !important;
+            padding: 15px !important;
+            border-radius: 10px !important;
+            border: 2px solid #c8e6c9 !important;
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1) !important;
+            animation: welcomeGlow 2s ease-in-out;
+        }
+        
+        @keyframes welcomeGlow {
+            0% {
+                box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+            }
+            100% {
+                box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1);
+            }
+        }
+        
+        .welcome-message {
+            font-size: 14px;
+            font-weight: normal;
+            margin-top: 5px;
+            color: #666;
+        }
+        /* Navigation user section */
+        
+        .nav-user-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-name {
+            color: white;
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .review-section {
+            margin: 40px 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .review-section h2 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .add-review-btn {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .add-review-btn:hover {
+            background: linear-gradient(135deg, #45a049, #388e3c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+        
+        .reviews-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .review-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #4caf50;
+            position: relative;
+        }
+        
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .review-header-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .reviewer-info {
+            flex-grow: 1;
+        }
+        
+        .reviewer-info h4 {
+            margin: 0;
+            color: #2e7d32;
+            font-size: 18px;
+        }
+        
+        .reviewer-info .review-date {
+            color: #666;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        
+        .stars {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #ffc107;
+        }
+        
+        .review-text {
+            color: #444;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+        /* Delete button styles */
+        
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        
+        .review-card:hover .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+        
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+        /* Review ownership indicator */
+        
+        .review-card.own-review {
+            border-left-color: #ffc107;
+            background: linear-gradient(135deg, #fffbf0, #ffffff);
+        }
+        
+        .review-card.own-review .reviewer-avatar {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+        }
+        
+        .own-review-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ffc107;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .details-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin: 30px auto;
+            max-width: 1000px;
+        }
+        
+        .details-card {
+            flex: 1;
+            min-width: 280px;
+            max-width: 420px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .details-card h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2e7d32;
+        }
+        
+        .details-card label {
+            font-weight: 600;
+            margin-top: 6px;
+            display: block;
+            color: #333;
+        }
+        
+        .details-card input,
+        .details-card select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 4px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        /* Review Form Modal */
+        
+        .review-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .review-modal.show {
+            display: flex;
+        }
+        
+        .review-form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .review-form h3 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        /* Star Rating Input */
+        
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .star-rating input {
+            display: none;
+        }
+        
+        .star-rating label {
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .star-rating label:hover,
+        .star-rating label:hover~label,
+        .star-rating input:checked~label {
+            color: #ffc107;
+        }
+        
+        .star-rating input:checked+label,
+        .star-rating input:checked+label~label {
+            color: #ffc107;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #45a049, #388e3c);
+            transform: translateY(-2px);
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .no-reviews {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        /* Confirmation modal */
+        
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .confirm-modal.show {
+            display: flex;
+        }
+        
+        .confirm-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .confirm-content h3 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        
+        .confirm-content p {
+            margin-bottom: 25px;
+            color: #666;
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn-confirm-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-confirm-delete:hover {
+            background: #c82333;
+        }
+        
+        .btn-confirm-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-confirm-cancel:hover {
+            background: #5a6268;
+        }
+        /* Responsive design */
+        
+        @media (max-width: 768px) {
+            .review-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .reviews-container {
+                grid-template-columns: 1fr;
+            }
+            .review-form-container {
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+            .delete-btn {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        /* Details card */
+        
+        .input-section {
+            max-width: 420px;
+            margin: 30px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .input-section h2 {
+            text-align: center;
+            margin: 0 0 10px;
+            color: #2e7d32;
+        }
+        
+        .input-section label {
+            font-weight: 600;
+            margin-top: 6px;
+            color: #333;
+        }
+        
+        .input-section input {
+            width: 100%;
+            padding: 10px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        
+        .input-section .btn {
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-title">
+            <img src="image/logo.png" alt="Logo" width="50" height="50">
+            <h1>Diet Planner</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="summary.html">Summary</a></li>
+                <li><a href="healthtracker.html">Health Tracker</a></li>
+                <li><a href="chatbot.html">Chat Bot</a></li>
+                <li id="authSection">
+                    <a href="landing.html">Logout</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="middle">
+        <div id="greeting">Good Night</div>
+
+        <div class="quote-section">
+            <blockquote>"Your body is your temple, take care of it."</blockquote>
+        </div>
+
+        <div class="diet-options">
+            <label class="diet-option">
+        <input type="checkbox" name="diet" value="Keto">
+        <img src="image/keto.jpg" alt="Keto Diet">
+        <span>Keto</span>
+        <button class="know-more">Know More</button>
+        <div class="diet-info">
+          <p>The Keto diet is a low-carb, high-fat diet that helps in burning fat efficiently.</p>
+        </div>
+      </label>
+            <label class="diet-option">
+        <input type="checkbox" name="diet" value="Gluten-Free">
+        <img src="image/glutenfree.jpg" alt="Gluten-Free Diet">
+        <span>Gluten-Free</span>
+        <button class="know-more">Know More</button>
+        <div class="diet-info">
+          <p>The Gluten-Free diet is suitable for people with gluten intolerance or celiac disease.</p>
+        </div>
+      </label>
+            <label class="diet-option">
+        <input type="checkbox" name="diet" value="Veg">
+        <img src="image/veg.jpg" alt="Vegetarian Diet">
+        <span>Vegetarian</span>
+        <button class="know-more">Know More</button>
+        <div class="diet-info">
+          <p>The Vegetarian diet excludes all animal flesh and focuses on plant-based foods.</p>
+        </div>
+      </label>
+            <label class="diet-option">
+        <input type="checkbox" name="diet" value="Vegan">
+        <img src="image/vegan.jpg" alt="Vegan Diet">
+        <span>Vegan</span>
+        <button class="know-more">Know More</button>
+        <div class="diet-info">
+          <p>The Vegan diet excludes all animal products and focuses on plant-based foods.</p>
+        </div>
+      </label>
+            <label class="diet-option">
+        <input type="checkbox" name="diet" value="Non-Veg">
+        <img src="image/nonveg.jpg" alt="Non-Veg Diet">
+        <span>Non-Veg</span>
+        <button class="know-more">Know More</button>
+        <div class="diet-info">
+          <p>The Non-Veg diet includes meat, poultry, fish, and other animal-based products.</p>
+        </div>
+      </label>
+        </div>
+
+        <div class="details-container">
+            <div class="details-card">
+                <h2>Your Details</h2>
+                <label for="gender">Gender</label>
+                <select id="gender">
+          <option value="">Select</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+
+                <label for="age">Age (years)</label>
+                <input type="number" id="age" placeholder="e.g., 25">
+
+                <label for="height">Height (cm)</label>
+                <input type="number" id="height" placeholder="e.g., 170" oninput="updateLiveBMI()">
+            </div>
+
+            <div class="details-card">
+                <h2>Fitness Details</h2>
+                <label for="weight">Current Weight (kg)</label>
+                <input type="number" id="weight" placeholder="e.g., 70" oninput="updateLiveBMI()">
+
+                <label for="goal">Goal Weight (kg)</label>
+                <input type="number" id="goal" placeholder="e.g., 65" style="display:none;">
+
+                <div id="goal-suggestion-container">
+                    <p style="text-align:center;">Suggested Goal Weight: <span id="suggestedGoalVal">--</span> kg</p>
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <button type="button" class="btn" onclick="acceptSuggestedGoal()">Accept</button>
+                        <button type="button" class="btn" style="background:#6c757d;" onclick="manualGoalInput()">Set Manually</button>
+                    </div>
+                </div>
+
+                <div id="goal-display" style="margin-top:10px;">
+                    Current Goal: <span id="finalGoalDisplay">--</span>
+                </div>
+
+                <label for="bmiDisplay">BMI</label>
+                <input type="text" id="bmiDisplay" placeholder="BMI will appear here" readonly>
+
+                <label for="activity">Activity Level</label>
+                <select id="activity">
+          <option value="1.2">Sedentary (little/no exercise)</option>
+          <option value="1.375">Light (1–3 days/week)</option>
+          <option value="1.55">Moderate (3–5 days/week)</option>
+          <option value="1.725">Active (6–7 days/week)</option>
+          <option value="1.9">Very Active (physical job + exercise)</option>
+        </select>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <button id="main-calc-btn" class="btn" onclick="initiateCalculationAndSuggestion()">Calculate BMI & Suggest Goal</button>
+        </div>
+
+        <div class="summary-container">
+            <h2 class="summary-title">Your Diet Summary</h2>
+            <div class="user-summary">
+                <div class="user-info">
+                    <div class="info-card">
+                        <span class="info-value" id="bmiValue">--</span>
+                        <div class="info-label">BMI</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-value" id="currentWeight">--</span>
+                        <div class="info-label">Current Weight (kg)</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-value" id="goalWeight">--</span>
+                        <div class="info-label">Goal Weight (kg)</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-value" id="calorieLimit">--</span>
+                        <div class="info-label">Daily Calories</div>
+                    </div>
+                    <div class="info-card">
+                        <span class="info-value" id="dietType">--</span>
+                        <div class="info-label">Diet Type</div>
+                    </div>
+                </div>
+                <div id="statusMessage"></div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <button class="btn" onclick="saveAndRedirect()" style="background-color: #2e7d32;">Generate Plan</button>
+        </div>
+        <script>
+            // --- Update live BMI ---
+            function updateLiveBMI() {
+                const height = parseFloat(document.getElementById("height").value);
+                const weight = parseFloat(document.getElementById("weight").value);
+                const bmiDisplay = document.getElementById('bmiDisplay');
+
+                if (!height || !weight || height <= 0 || weight <= 0) {
+                    bmiDisplay.value = '';
+                    return;
+                }
+
+                const heightInM = height / 100;
+                const bmi = weight / (heightInM * heightInM);
+                bmiDisplay.value = bmi.toFixed(1);
+            }
+
+            // --- Suggest goal weight ---
+            function suggestGoalWeight(heightCm) {
+                const targetBMI = 22.5;
+                const heightInM = heightCm / 100;
+                const suggestedWeight = targetBMI * heightInM * heightInM;
+                return Math.max(suggestedWeight.toFixed(0), 10);
+            }
+
+            // --- Accept suggested goal ---
+            function acceptSuggestedGoal() {
+                const goalInput = document.getElementById("goal");
+                const suggestedGoal = document.getElementById("suggestedGoalVal").innerText;
+                goalInput.value = suggestedGoal;
+                document.getElementById("finalGoalDisplay").innerText = `${suggestedGoal} kg (Accepted)`;
+            }
+
+            // --- Manual goal input ---
+            function manualGoalInput() {
+                const goalInput = document.getElementById("goal");
+                goalInput.style.display = "block";
+                goalInput.focus();
+                document.getElementById("goal-suggestion-container").style.display = "none";
+            }
+
+            // --- Initiate Calculation ---
+            function initiateCalculationAndSuggestion() {
+                const height = parseFloat(document.getElementById("height").value);
+                const weight = parseFloat(document.getElementById("weight").value);
+                const age = parseInt(document.getElementById("age").value);
+                const gender = document.getElementById("gender").value;
+                const dietElements = document.querySelectorAll('input[name="diet"]:checked');
+                const diet = Array.from(dietElements).map(el => el.value).join(", ");
+                const activity = parseFloat(document.getElementById("activity").value);
+
+                if (!height || !weight || !age || !gender || !diet) {
+                    alert("Please enter Height, Weight, Age, Gender and select a diet.");
+                    return;
+                }
+
+                // BMI
+                const heightInM = height / 100;
+                const bmi = (weight / (heightInM * heightInM)).toFixed(1);
+                document.getElementById('bmiDisplay').value = bmi;
+
+                // Ask backend AI for goal weight and daily calories, with graceful fallback
+                fetch('/ai-goals', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            gender,
+                            age,
+                            heightCm: height,
+                            weightKg: weight,
+                            activity,
+                            dietPreference: diet,
+                            bmi
+                        })
+                    })
+                    .then(r => r.ok ? r.json() : Promise.reject(new Error('Failed to get AI goals')))
+                    .then(({
+                        goalWeight,
+                        dailyCalories
+                    }) => {
+                        const suggestedGoal = Number.isFinite(goalWeight) ? goalWeight : suggestGoalWeight(height);
+                        const calorieLimit = Number.isFinite(dailyCalories) ? dailyCalories : calculateCalorieLimit(weight, height, age, gender, activity, diet);
+
+                        document.getElementById("suggestedGoalVal").innerText = suggestedGoal;
+                        document.getElementById("goal").value = suggestedGoal;
+                        document.getElementById("finalGoalDisplay").innerText = `${suggestedGoal} kg (Suggested)`;
+                        document.getElementById("goal-display").style.display = "block";
+
+                        // Call the summary function to populate the box
+                        showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+
+                        // Change button behavior
+                        document.getElementById('main-calc-btn').innerText = "Show Summary";
+                        document.getElementById('main-calc-btn').onclick = () => {
+                            showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+                        };
+                    })
+                    .catch(() => {
+                        // Pure local fallback
+                        const suggestedGoal = suggestGoalWeight(height);
+                        const calorieLimit = calculateCalorieLimit(weight, height, age, gender, activity, diet);
+
+                        document.getElementById("suggestedGoalVal").innerText = suggestedGoal;
+                        document.getElementById("goal").value = suggestedGoal;
+                        document.getElementById("finalGoalDisplay").innerText = `${suggestedGoal} kg (Suggested)`;
+                        document.getElementById("goal-display").style.display = "block";
+
+                        // Call the summary function to populate the box
+                        showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+
+                        // Change button behavior
+                        document.getElementById('main-calc-btn').innerText = "Show Summary";
+                        document.getElementById('main-calc-btn').onclick = () => {
+                            showFinalSummary(height, weight, bmi, diet, suggestedGoal, calorieLimit);
+                        };
+                    });
+            }
+
+            // --- Calorie Calculator (Mifflin–St Jeor) ---
+            function calculateCalorieLimit(weight, height, age, gender, activity, diet) {
+                let bmr;
+                if (gender === "male") {
+                    bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+                } else {
+                    bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+                }
+
+                let tdee = bmr * activity;
+
+                // Adjust slightly by diet type (optional)
+                switch (diet) {
+                    case "Keto":
+                        tdee -= 200;
+                        break;
+                    case "Vegan":
+                        tdee -= 100;
+                        break;
+                    case "Vegetarian":
+                        tdee += 50;
+                        break;
+                    case "Non-Veg":
+                        tdee += 100;
+                        break;
+                    case "Gluten-Free":
+                        tdee -= 50;
+                        break;
+                }
+
+                return Math.round(tdee);
+            }
+
+            // --- 
+            // UPDATED Show Summary FUNCTION (using your new IDs)
+            // --- 
+            function showFinalSummary(height, weight, bmi, diet, goal, calorieLimit) {
+                // Update new card values
+                document.getElementById('bmiValue').innerText = bmi;
+                document.getElementById('currentWeight').innerText = weight; // Added current weight
+                document.getElementById('goalWeight').innerText = goal;
+                document.getElementById('dietType').innerText = diet;
+                document.getElementById('calorieLimit').innerText = calorieLimit; // Just the number
+            }
+
+            // --- Save & Redirect ---
+            function saveAndRedirect() {
+                const height = document.getElementById('height').value;
+                const weight = document.getElementById('weight').value;
+                const bmi = document.getElementById('bmiDisplay').value;
+                const goal = document.getElementById('goal').value;
+                const dietChecked = document.querySelector('input[name="diet"]:checked'); // Check if any is selected
+                const diet = dietChecked ? dietChecked.value : ''; // Get value or empty string
+
+                const gender = document.getElementById('gender').value;
+                const age = document.getElementById('age').value;
+                const activity = document.getElementById('activity').value;
+
+                if (!bmi || !goal || !diet || !weight || !height || !gender || !age) {
+                    alert("Please fill in all details and select a diet before generating the plan.");
+                    return;
+                }
+
+
+                // Store all user data in localStorage for summary page
+                localStorage.setItem('height', height);
+                localStorage.setItem('weight', weight);
+                localStorage.setItem('bmi', bmi);
+                localStorage.setItem('goal', goal);
+                localStorage.setItem('diet', diet);
+                localStorage.setItem('gender', gender);
+                localStorage.setItem('age', age);
+                localStorage.setItem('activity', activity);
+
+                const calorieLimit = calculateCalorieLimit(weight, height, age, gender, activity, diet);
+                localStorage.setItem('calorieLimit', calorieLimit);
+
+                // Set flag to trigger AI meal plan generation on summary page
+                localStorage.setItem('generatePlan', 'true');
+
+                window.location.href = 'summary.html';
+            }
+        </script>
+
+    </div>
+    <div class="right">
+        <h2>Health Hub</h2>
+
+        <div class="video-container">
+
+            <div class="video-item">
+                <h3>Diet Tips</h3>
+                <iframe src="https://www.youtube.com/embed/W2B0NHUUx8Q" title="Diet Tips" allowfullscreen loading="lazy"></iframe>
+            </div>
+
+            <div class="video-item">
+                <h3>Exercise</h3>
+                <iframe src="https://www.youtube.com/embed/bO6NNfX_1ns" title="Exercise" allowfullscreen loading="lazy"></iframe>
+            </div>
+
+            <div class="video-item">
+                <h3>Recipes</h3>
+                <iframe src="https://www.youtube.com/embed/gVMWv3vbrQc" title="Recipes" allowfullscreen loading="lazy"></iframe>
+            </div>
+
+        </div>
+    </div>
+    <footer>
+        <p>Follow us:
+            <a href="#">Facebook</a> |
+            <a href="#">Instagram</a> |
+            <a href="#">Twitter</a>
+        </p>
+        <p>Contact: dietplanner@gmail.com</p>
+    </footer>
+
+    <script>
+        // --- Diet option "Know More" toggle (FIXED) ---
+        document.querySelectorAll('.know-more').forEach(button => {
+            // 1. Add the 'event' parameter
+            button.addEventListener('click', (event) => {
+
+                // 2. Add this line to stop the label from firing
+                event.preventDefault();
+
+                // 3. Find the info box
+                const info = button.nextElementSibling;
+
+                // 4. Check if we found the info box before trying to show it
+                if (info && info.classList.contains('diet-info')) {
+                    // Toggle the display
+                    info.style.display = info.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        });
+
+        // --- Personalized Greeting ---
+        function updateGreeting() {
+            const greetingEl = document.getElementById('greeting');
+            const hour = new Date().getHours();
+            let greetingText = "Good Night";
+
+            if (hour >= 5 && hour < 12) {
+                greetingText = "Good Morning";
+            } else if (hour >= 12 && hour < 17) {
+                greetingText = "Good Afternoon";
+            } else if (hour >= 17 && hour < 21) {
+                greetingText = "Good Evening";
+            }
+
+            greetingEl.innerText = greetingText;
+
+            // Check login status
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user && user.name) {
+                greetingEl.classList.add('greeting-logged-in');
+                greetingEl.innerHTML += `<div class="welcome-message">Welcome, ${user.name}!</div>`;
+                addUserToNav(user.name);
+            }
+        }
+
+
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.reload();
+        }
+
+        updateGreeting();
+    </script>
+
+</body>
+
+</html>

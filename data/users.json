@@ -1,0 +1,56 @@
+[{
+        "id": 1758709199217,
+        "name": "vedanti",
+        "email": "vedanti@gmail.com",
+        "password": "$2b$10$rkj1o.SEOQwIGEXleAIccuH6IigXuRMULq9XKJwgTcp0vYnVzOxqi",
+        "dob": "2005-03-17",
+        "createdAt": "2025-09-24T10:19:59.217Z",
+        "dietPreferences": {
+            "dietType": "Vegan",
+            "height": 170,
+            "weight": 65,
+            "goalWeight": 55,
+            "activityLevel": "moderate",
+            "calorieTarget": 1600,
+            "updatedAt": "2025-10-02T10:00:52.894Z"
+        },
+        "mealHistory": []
+    },
+    {
+        "id": 1758710540188,
+        "name": "srishti",
+        "email": "srishtiyadav@gmail.com",
+        "password": "$2b$10$OO7vSiwjCzs2TF.1tASfvuKiLbtqNmQ2hulLLekgZfB/MDON7htAq",
+        "dob": "2005-04-01",
+        "createdAt": "2025-09-24T10:42:20.188Z",
+        "dietPreferences": {
+            "dietType": "Veg",
+            "height": 165,
+            "weight": 65,
+            "goalWeight": 60,
+            "activityLevel": "moderate",
+            "calorieTarget": 1600,
+            "updatedAt": "2025-10-02T10:46:16.746Z"
+        },
+        "mealHistory": []
+    },
+    {
+        "id": 1758710540189,
+        "name": "pradnya",
+        "email": "pradnya@gmail.com",
+        "password": "$2b$10$G60IJx6v6j07T.3o.Wgg/OfjSbA00xBFV1IKKRhP76nk15C5ccjme",
+        "dob": "2005-10-05",
+        "role": "user",
+        "createdAt": "2025-10-02T10:47:04.915Z",
+        "dietPreferences": {
+            "dietType": "Vegan",
+            "height": null,
+            "weight": null,
+            "goalWeight": null,
+            "activityLevel": "moderate",
+            "calorieTarget": 1600,
+            "updatedAt": "2025-10-02T15:54:06.904Z"
+        },
+        "mealHistory": []
+    }
+]

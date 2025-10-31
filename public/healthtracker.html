@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Tracker – Diet Planner</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tracker-container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+        
+        .tracker-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 18px;
+        }
+        
+        .card h2 {
+            margin: 0 0 12px;
+            color: #2e7d32;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            /* <-- MODIFIED FOR 3x2 LAYOUT */
+            gap: 10px;
+        }
+        
+        .form-row label {
+            font-size: 12px;
+            color: #444;
+        }
+        
+        .form-row input,
+        .form-row select,
+        .form-row textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .small {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th,
+        td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #f8faf9;
+            color: #2e7d32;
+            position: sticky;
+            top: 0;
+        }
+        
+        .table-wrap {
+            max-height: 350px;
+            overflow: auto;
+        }
+        
+        .chart-wrap {
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        canvas {
+            max-width: 100%;
+            height: 300px;
+        }
+        
+        .tips {
+            white-space: pre-wrap;
+            background: #f9fff7;
+            border: 1px solid #c8e6c9;
+            padding: 12px;
+            border-radius: 8px;
+            min-height: 120px;
+        }
+        
+        .summary {
+            white-space: pre-wrap;
+            background: #f8f9ff;
+            border: 1px solid #cfe2ff;
+            padding: 12px;
+            border-radius: 8px;
+            min-height: 80px;
+        }
+        
+        .goals {
+            white-space: pre-wrap;
+            background: #fffaf4;
+            border: 1px solid #ffe0b2;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .exercise-recommendations {
+            background: #fff3e0;
+            border: 1px solid #ffcc02;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 150px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .exercise-item {
+            background: white;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #ff9800;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .exercise-title {
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 4px;
+        }
+        
+        .exercise-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .exercise-benefits {
+            font-size: 12px;
+            color: #4caf50;
+            font-style: italic;
+        }
+        
+        @media (max-width: 900px) {
+            .tracker-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-title">
+            <img src="image/logo.png" alt="Logo">
+            <h1>Diet Planner</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="summary.html">Summary</a></li>
+                <li><a href="healthtracker.html">Health Tracker</a></li>
+                <li><a href="chatbot.html">Chat Bot</a></li>
+                <li><a href="landing.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="tracker-container">
+        <div class="tracker-grid">
+            <div class="card">
+                <h2>Log Your Health Data</h2>
+                <div class="form-row">
+                    <div>
+                        <label>Date</label>
+                        <input type="date" id="htDate">
+                    </div>
+                    <div>
+                        <label>Weight (kg)</label>
+                        <input type="number" id="htWeight" step="0.1" placeholder="e.g., 70">
+                    </div>
+                    <div>
+                        <label>Calories (kcal)</label>
+                        <input type="number" id="htCalories" placeholder="e.g., 1800">
+                    </div>
+                    <div>
+                        <label>Exercise (min)</label>
+                        <input type="number" id="htExercise" placeholder="e.g., 30">
+                    </div>
+                    <div>
+                        <label>Sleep (hrs)</label>
+                        <input type="number" id="htSleep" step="0.1" placeholder="e.g., 7.5">
+                    </div>
+                    <div>
+                        <label>Mood</label>
+                        <select id="htMood">
+              <option value="">--</option>
+              <option>😊 Happy</option>
+              <option>😌 Calm</option>
+              <option>😐 Neutral</option>
+              <option>😴 Tired</option>
+              <option>😟 Stressed</option>
+            </select>
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top:10px; grid-template-columns: 1fr;">
+                    <div>
+                        <label>Notes</label>
+                        <textarea id="htNotes" rows="2" placeholder="Anything noteworthy today..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button onclick="addHealthEntry()">Add Entry</button>
+                    <button onclick="clearForm()" style="background:#6c757d">Clear</button>
+                </div>
+                <div class="small" id="htStatus"></div>
+            </div>
+
+            <div class="card">
+                <h2>Progress</h2>
+                <div class="chart-wrap">
+                    <canvas id="htChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>Your Logs</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Weight</th>
+                            <th>Calories</th>
+                            <th>Exercise</th>
+                            <th>Sleep</th>
+                            <th>Mood</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="htTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>Progress Summary</h2>
+            <div class="summary" id="htSummary">Summaries will appear here after logging data.</div>
+            <div class="form-actions">
+                <button onclick="generateProgressSummary()">Get Progress Summary</button>
+            </div>
+
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>AI Tips</h2>
+            <div class="tips" id="htTips">Add a few days of logs to see personalized tips.</div>
+            <div class="form-actions">
+                <button onclick="generateAITips()">Get AI Tips</button>
+            </div>
+
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>Smart Goals</h2>
+            <div class="goals" id="htGoals">AI goal suggestions will show here.</div>
+            <div class="form-actions">
+                <button onclick="suggestGoals()"> Get Smart Goals</button>
+                <button onclick="applySuggestedGoals()" style="background:#2e7d32">Apply Suggested Goals</button>
+            </div>
+
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>Exercise Recommendations</h2>
+            <div class="exercise-recommendations" id="htExercises">AI exercise suggestions will appear here based on your health data.</div>
+            <div class="form-actions">
+                <button onclick="generateExerciseRecommendations()">🏃‍♀️ Get AI Exercise Plan</button>
+                <button onclick="refreshExercisePlan()" style="background:#ff9800">🔄 New Exercise Options</button>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Follow us:
+            <a href="#">Facebook</a> |
+            <a href="#">Instagram</a> |
+            <a href="#">Twitter</a>
+        </p>
+        <p>Contact: dietplanner@example.com</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        function getCurrentUser() {
+            try {
+                return JSON.parse(localStorage.getItem('user') || 'null');
+            } catch {
+                return null;
+            }
+        }
+
+        function userKey(prefix) {
+            const u = getCurrentUser();
+            const id = (u && u.id) || (u && u.email) || 'guest';
+            return `${prefix}:${id}`;
+        }
+        const STORAGE_KEY = userKey('healthLogs');
+        const API_BASE = 'http://localhost:3000';
+        let chartRef = null;
+
+        document.addEventListener('DOMContentLoaded', async() => {
+            document.getElementById('htDate').valueAsDate = new Date();
+            await syncFromServer();
+            renderTable();
+            renderChart();
+            autoGenerateInsights();
+        });
+
+        function getLogs() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            try {
+                return raw ? JSON.parse(raw) : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function setLogs(logs) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+        }
+
+        async function syncFromServer() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/health-logs`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data.logs)) setLogs(data.logs);
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        function clearForm() {
+            document.getElementById('htWeight').value = '';
+            document.getElementById('htCalories').value = '';
+            document.getElementById('htExercise').value = '';
+            document.getElementById('htSleep').value = '';
+            document.getElementById('htMood').value = '';
+            document.getElementById('htNotes').value = '';
+        }
+
+        async function addHealthEntry() {
+            const date = document.getElementById('htDate').value;
+            const weight = parseFloat(document.getElementById('htWeight').value);
+            const calories = parseInt(document.getElementById('htCalories').value);
+            const exercise = parseInt(document.getElementById('htExercise').value);
+            const sleep = parseFloat(document.getElementById('htSleep').value);
+            const mood = document.getElementById('htMood').value;
+            const notes = document.getElementById('htNotes').value.trim();
+
+            if (!date || isNaN(weight)) {
+                setStatus('Please provide at least date and weight.');
+                return;
+            }
+
+            const entry = {
+                id: crypto.randomUUID(),
+                date,
+                weight,
+                calories: isNaN(calories) ? null : calories,
+                exercise: isNaN(exercise) ? null : exercise,
+                sleep: isNaN(sleep) ? null : sleep,
+                mood,
+                notes
+            };
+            const logs = getLogs();
+            // Replace existing entry for same date or push
+            const idx = logs.findIndex(l => l.date === date);
+            if (idx >= 0) logs[idx] = entry;
+            else logs.push(entry);
+            // Sort by date ascending
+            logs.sort((a, b) => new Date(a.date) - new Date(b.date));
+            setLogs(logs);
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                try {
+                    await fetch(`${API_BASE}/api/health-logs`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify(entry)
+                    });
+                } catch (e) { /* ignore */ }
+            }
+            renderTable();
+            renderChart();
+            autoGenerateInsights();
+            clearForm();
+            setStatus('Entry saved.');
+        }
+
+        async function deleteEntry(id) {
+            const logs = getLogs().filter(l => l.id !== id);
+            setLogs(logs);
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                try {
+                    await fetch(`${API_BASE}/api/health-logs/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                } catch (e) { /* ignore */ }
+            }
+            renderTable();
+            renderChart();
+            autoGenerateInsights();
+            setStatus('Entry deleted.');
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('htTableBody');
+            const logs = getLogs();
+            if (!logs.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="small">No entries yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td>${l.date}</td>
+          <td>${l.weight ?? ''}</td>
+          <td>${l.calories ?? ''}</td>
+          <td>${l.exercise ?? ''}</td>
+          <td>${l.sleep ?? ''}</td>
+          <td>${l.mood ?? ''}</td>
+          <td><button style="background:#dc3545" onclick="deleteEntry('${l.id}')">Delete</button></td>
+        </tr>
+      `).join('');
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('htChart');
+            const logs = getLogs();
+            const labels = logs.map(l => l.date);
+            const weights = logs.map(l => l.weight);
+            if (chartRef) {
+                chartRef.destroy();
+            }
+            chartRef = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: weights,
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        async function generateAITips() {
+            const tipsEl = document.getElementById('htTips');
+            const logs = getLogs();
+            if (logs.length < 1) {
+                tipsEl.textContent = 'Add at least one entry to get AI tips.';
+                return;
+            }
+            tipsEl.textContent = '🤖 Generating personalized AI tips...';
+
+            try {
+                // Get the most recent entry for AI analysis
+                const latest = logs[logs.length - 1];
+                const previousData = logs.slice(-7, -1); // Previous 6 entries for context
+
+                // Get user's diet preference from localStorage
+                const dietPreference = localStorage.getItem('diet') || 'Balanced';
+
+                const res = await fetch(`${API_BASE}/ai-health-insights`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        weight: latest.weight,
+                        calories: latest.calories,
+                        exercise: latest.exercise,
+                        sleep: latest.sleep,
+                        mood: latest.mood,
+                        notes: latest.notes || '',
+                        diet: dietPreference,
+                        previousData: previousData
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.tips && Array.isArray(data.tips)) {
+                        tipsEl.textContent = data.tips.join('\n\n');
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('AI tips failed, using fallback:', e);
+            }
+
+            // Fallback to local analysis
+            const recent = logs.slice(-7);
+            const weightDelta = recent.length >= 2 ? (recent[recent.length - 1].weight - recent[0].weight) : 0;
+            const avgCalories = avg(recent.map(r => r.calories).filter(v => typeof v === 'number'));
+            const avgSleep = avg(recent.map(r => r.sleep).filter(v => typeof v === 'number'));
+            const avgExercise = avg(recent.map(r => r.exercise).filter(v => typeof v === 'number'));
+
+            const calorieLimit = parseInt(localStorage.getItem(userKey('calorieLimit')) || localStorage.getItem('calorieLimit') || '0');
+            const parts = [];
+            parts.push(`Weight change over period: ${fmtDelta(weightDelta)}.`);
+            if (avgCalories) {
+                parts.push(`Average calories: ${Math.round(avgCalories)}${calorieLimit ? ` (target: ${calorieLimit})` : ''}.`);
+        if (calorieLimit && avgCalories > calorieLimit + 150) parts.push('Tip: Consider reducing portion sizes or increasing activity slightly.');
+        if (calorieLimit && avgCalories < calorieLimit - 150) parts.push('Tip: You may be under-eating; ensure adequate protein and nutrients.');
+      }
+      if (avgSleep) {
+        if (avgSleep < 7) parts.push('Aim for at least 7 hours of sleep to support recovery.');
+        else parts.push('Great job maintaining healthy sleep duration.');
+      }
+      if (avgExercise) {
+        if (avgExercise < 90) parts.push('Try to reach 150 minutes of moderate exercise per week.');
+        else parts.push('Nice consistency with your activity levels!');
+      }
+      const moods = recent.map(r => r.mood).filter(Boolean);
+      if (moods.length) {
+        const negative = moods.filter(m => /Tired|Stressed/.test(m)).length;
+        if (negative / moods.length > 0.5) parts.push('Frequent tired/stressed moods detected: consider deload weeks, mindfulness, or lighter meals.');
+      }
+      tipsEl.textContent = parts.join('\n');
+    }
+
+    function avg(arr) { if (!arr.length) return null; return arr.reduce((a,b) => a+b, 0) / arr.length; }
+    function fmtDelta(d) { if (!d) return '0.0 kg'; const sign = d > 0 ? '+' : ''; return `${sign}${d.toFixed(1)} kg`; }
+    function setStatus(msg) { document.getElementById('htStatus').textContent = msg; setTimeout(() => { document.getElementById('htStatus').textContent = ''; }, 2500); }
+
+    async function generateProgressSummary() {
+      const el = document.getElementById('htSummary');
+      const logs = getLogs();
+      if (logs.length < 1) { 
+        el.textContent = 'Add at least one entry to get AI progress summary.'; 
+        return; 
+      }
+      el.textContent = '🤖 Generating AI progress summary...';
+
+      try {
+        // Get the most recent entry for AI analysis
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1); // Previous 6 entries for context
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        const res = await fetch(`${API_BASE}/ai-health-insights`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            calories: latest.calories,
+            exercise: latest.exercise,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            notes: latest.notes || '',
+            diet: dietPreference,
+            previousData: previousData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.summary) {
+            el.textContent = data.summary;
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('AI summary failed, using fallback:', e);
+      }
+
+      // Local fallback: compute simple summary
+      const recent = logs.slice(-30);
+      if (recent.length >= 2) {
+        const start = recent[0];
+        const end = recent[recent.length - 1];
+        const weightDelta = end.weight - start.weight;
+        const bmiParams = getBMIParams();
+        let bmiText = '';
+        if (bmiParams) {
+          const bmiStart = calcBMI(start.weight, bmiParams.heightCm);
+          const bmiEnd = calcBMI(end.weight, bmiParams.heightCm);
+          const bmiChangePct = bmiStart ? ((bmiEnd - bmiStart) / bmiStart) * 100 : 0;
+          bmiText = `BMI: ${bmiStart.toFixed(1)} → ${bmiEnd.toFixed(1)} (${bmiChangePct >= 0 ? '+' : ''}${bmiChangePct.toFixed(1)}%).`;
+        }
+        el.textContent = `From ${start.date} to ${end.date}: weight ${fmtDelta(weightDelta)}. ${bmiText}`.trim();
+      } else {
+        el.textContent = 'Keep logging your daily data to see progress trends!';
+      }
+    }
+
+    async function suggestGoals() {
+      const el = document.getElementById('htGoals');
+      const logs = getLogs();
+      if (!logs.length) { 
+        el.textContent = 'Add some logs to get AI goal suggestions.'; 
+        return; 
+      }
+      el.textContent = '🤖 Generating AI smart goals...';
+
+      try {
+        // Get the most recent entry for AI analysis
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1); // Previous 6 entries for context
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        const res = await fetch(`${API_BASE}/ai-health-insights`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            calories: latest.calories,
+            exercise: latest.exercise,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            notes: latest.notes || '',
+            diet: dietPreference,
+            previousData: previousData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.goals && Array.isArray(data.goals)) {
+            el.textContent = data.goals.join('\n\n');
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('AI goals failed, using fallback:', e);
+      }
+
+      // Local fallback goal logic
+      const recent = logs.slice(-14);
+      const calorieTarget = parseInt(localStorage.getItem('calorieLimit') || '0') || null;
+      const goalWeight = parseFloat(localStorage.getItem('goal') || '0') || null;
+      const parts = [];
+      if (goalWeight) {
+        const last = recent[recent.length - 1] || logs[logs.length - 1];
+        const remaining = goalWeight - last.weight;
+        parts.push(`Target weight: ${goalWeight} kg (remaining ${fmtDelta(remaining)}).`);
+      }
+      const avgCalories = avg(recent.map(r => r.calories).filter(v => typeof v === 'number'));
+      if (calorieTarget && avgCalories) {
+        const adj = avgCalories > calorieTarget ? -100 : (avgCalories < calorieTarget - 150 ? +100 : 0);
+        if (adj !== 0) parts.push(`Proposed daily calorie adjustment: ${adj > 0 ? '+' : ''}${adj} kcal.`);
+      }
+      const avgExercise = avg(recent.map(r => r.exercise).filter(v => typeof v === 'number')) || 0;
+      if (avgExercise < 150/7) parts.push('Proposed activity: aim for 25–30 min/day moderate exercise.');
+      else parts.push('Maintain current activity; consider adding 1 strength session/week.');
+      el.textContent = parts.join('\n');
+    }
+
+    function applySuggestedGoals() {
+      const text = document.getElementById('htGoals').textContent;
+      const match = text.match(/Proposed daily calorie adjustment: ([+\-]?\d+) kcal/);
+      const current = parseInt(localStorage.getItem('calorieLimit') || '0');
+      if (match && current) {
+        const adj = parseInt(match[1]);
+        const updated = current + adj;
+        localStorage.setItem('calorieLimit', String(updated));
+        setStatus(`Updated calorie target to ${updated} kcal.`);
+        autoGenerateInsights();
+      } else {
+        setStatus('No applicable calorie adjustment found.');
+      }
+    }
+
+    function autoGenerateInsights() {
+      // Automatically refresh ALL AI sections when logs change
+      console.log('🔄 Auto-generating all AI insights for new health data...');
+      
+      // Generate all AI insights with staggered timing for better UX
+      generateProgressSummary();
+      
+      setTimeout(() => {
+        generateAITips();
+      }, 500);
+      
+      setTimeout(() => {
+        suggestGoals();
+      }, 1000);
+      
+      setTimeout(() => {
+        generateExerciseRecommendations();
+      }, 1500);
+      
+      // Show success message
+      setTimeout(() => {
+        setStatus('✅ All AI insights updated based on your new health data!');
+      }, 2000);
+    }
+
+    async function generateExerciseRecommendations() {
+      const exercisesEl = document.getElementById('htExercises');
+      const logs = getLogs();
+      if (!logs.length) {
+        exercisesEl.textContent = 'Add health data to get personalized exercise recommendations.';
+        return;
+      }
+      exercisesEl.textContent = '🏃‍♀️ Generating AI exercise recommendations...';
+
+      try {
+        // Get the most recent entry and user data
+        const latest = logs[logs.length - 1];
+        const previousData = logs.slice(-7, -1);
+        
+        // Get user's diet preference from localStorage
+        const dietPreference = localStorage.getItem('diet') || 'Balanced';
+        
+        // Calculate BMI if we have height data
+        const heightCm = parseFloat(localStorage.getItem('height') || '0') || null;
+        let bmi = null;
+        if (heightCm && latest.weight) {
+          const heightM = heightCm / 100;
+          bmi = latest.weight / (heightM * heightM);
+        }
+        
+        const res = await fetch(`${API_BASE}/ai-exercise-recommendations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: latest.weight,
+            bmi: bmi,
+            diet: dietPreference,
+            sleep: latest.sleep,
+            mood: latest.mood,
+            exercise: latest.exercise,
+            calories: latest.calories,
+            previousData: previousData
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.exercises && Array.isArray(data.exercises)) {
+            displayExerciseRecommendations(data.exercises);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('AI exercise recommendations failed, using fallback:', e);
+      }
+
+      // Fallback to local exercise recommendations
+      const fallbackExercises = getFallbackExerciseRecommendations(logs);
+      displayExerciseRecommendations(fallbackExercises);
+    }
+
+    function displayExerciseRecommendations(exercises) {
+      const exercisesEl = document.getElementById('htExercises');
+      
+      if (!exercises || exercises.length === 0) {
+        exercisesEl.textContent = 'No exercise recommendations available at this time.';
+        return;
+      }
+
+      const html = exercises.map(exercise => `
+        <div class="exercise-item">
+          <div class="exercise-title">${exercise.name}</div>
+          <div class="exercise-details">
+            <strong>Duration:</strong> ${exercise.duration} | 
+            <strong>Intensity:</strong> ${exercise.intensity}
+          </div>
+          <div class="exercise-details">
+            <strong>Instructions:</strong> ${exercise.instructions}
+          </div>
+          <div class="exercise-benefits">
+            <strong>Benefits:</strong> ${exercise.benefits}
+          </div>
+        </div>
+      `).join('');
+
+      exercisesEl.innerHTML = html;
+    }
+
+    function getFallbackExerciseRecommendations(logs) {
+      const latest = logs[logs.length - 1];
+      const currentExercise = latest.exercise || 0;
+      const isTired = latest.mood && (latest.mood.includes('😴') || latest.mood.includes('Tired'));
+      const isStressed = latest.mood && latest.mood.includes('😟');
+      const lowSleep = latest.sleep && latest.sleep < 7;
+
+      const exercises = [];
+
+      if (isTired || lowSleep) {
+        exercises.push({
+          name: "Gentle Walking",
+          duration: "15-20 minutes",
+          intensity: "Low",
+          instructions: "Start with a slow, comfortable pace. Focus on steady breathing and gentle movement.",
+          benefits: "Improves circulation, reduces stress, and provides gentle energy boost."
+        });
+      } else if (currentExercise < 30) {
+        exercises.push({
+          name: "Brisk Walking",
+          duration: "20-30 minutes",
+          intensity: "Medium",
+          instructions: "Walk at a pace that raises your heart rate but allows you to speak in short sentences.",
+          benefits: "Builds cardiovascular endurance, burns calories, and improves mood."
+        });
+      } else {
+        exercises.push({
+          name: "Interval Walking/Jogging",
+          duration: "25-35 minutes",
+          intensity: "Medium-High",
+          instructions: "Alternate between 2 minutes of brisk walking and 1 minute of light jogging.",
+          benefits: "Improves cardiovascular fitness and builds endurance efficiently."
+        });
+      }
+
+      if (isStressed) {
+        exercises.push({
+          name: "Yoga Flow",
+          duration: "15-25 minutes",
+          intensity: "Low-Medium",
+          instructions: "Perform gentle yoga poses focusing on breathing. Include cat-cow, child's pose, and gentle twists.",
+          benefits: "Reduces stress hormones, improves flexibility, and promotes mental relaxation."
+        });
+      } else if (currentExercise < 30) {
+        exercises.push({
+          name: "Bodyweight Strength Circuit",
+          duration: "15-20 minutes",
+          intensity: "Medium",
+          instructions: "Perform 3 rounds of: 10 squats, 10 push-ups (knee or wall), 10 lunges each leg, 30-second plank.",
+          benefits: "Builds functional strength, improves muscle tone, and increases metabolism."
+        });
+      } else {
+        exercises.push({
+          name: "Advanced Bodyweight Circuit",
+          duration: "25-30 minutes",
+          intensity: "High",
+          instructions: "Perform 4 rounds of: 15 jump squats, 15 burpees, 20 mountain climbers, 15 tricep dips, 1-minute plank.",
+          benefits: "Builds explosive power, improves cardiovascular fitness, and burns significant calories."
+        });
+      }
+
+      exercises.push({
+        name: "Dynamic Stretching Routine",
+        duration: "10-15 minutes",
+        intensity: "Low",
+        instructions: "Perform arm circles, leg swings, hip circles, and gentle spinal twists.",
+        benefits: "Improves joint mobility, reduces injury risk, and enhances recovery."
+      });
+
+      return exercises;
+    }
+
+    async function refreshExercisePlan() {
+      const button = document.querySelector('button[onclick="refreshExercisePlan()"]');
+      const originalText = button.textContent;
+      button.textContent = '🔄 Generating...';
+      button.disabled = true;
+
+      try {
+        await generateExerciseRecommendations();
+      } catch (e) {
+        console.warn('Refresh exercise plan failed:', e);
+      } finally {
+        button.textContent = originalText;
+        button.disabled = false;
+      }
+    }
+
+    function getBMIParams() {
+      const heightCm = parseFloat(localStorage.getItem(userKey('heightCm')) || localStorage.getItem('heightCm') || '0') || null;
+      if (!heightCm) return null; return { heightCm };
+    }
+    function calcBMI(weightKg, heightCm) { if (!weightKg || !heightCm) return null; const m = heightCm / 100; return weightKg / (m * m); }
+    </script>
+</body>
+
+</html>

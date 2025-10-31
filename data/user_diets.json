@@ -1,0 +1,16 @@
+[
+  {
+    "userId": 1,
+    "dietType": "Non-Veg",
+    "height": 78,
+    "weight": 80,
+    "goalWeight": 60,
+    "bmi": 131.5,
+    "activityLevel": "moderate",
+    "suggestedCalories": 2240,
+    "allergies": [],
+    "preferences": [],
+    "createdAt": "2025-09-24T09:43:09.580Z",
+    "updatedAt": "2025-09-24T09:43:09.580Z"
+  }
+]

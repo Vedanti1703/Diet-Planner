@@ -1,0 +1,534 @@
+/* External CSS (Blue for Customized Plan) */
+
+#customized-title {
+    color: blue;
+}
+
+
+/* Global Styles */
+
+body {
+    padding-top: 80px;
+    /* Adjust this value based on your header's final height */
+    /* Other body styles */
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #e6f4ea;
+    /* Light green background */
+}
+
+
+/* Header */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    /* Logo/Title left, Nav right */
+    align-items: center;
+    /* Vertically center items */
+    padding: 10px 40px;
+    /* Adjust padding */
+    background: #4caf50;
+    /* Healthy green */
+    color: white;
+    position: fixed;
+    /* Make header sticky */
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    /* Include padding in width */
+    z-index: 1000;
+    /* Ensure header stays on top */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+header .logo-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Space between logo and title */
+}
+
+header .logo-title img {
+    height: 60px;
+    /* CONTROL LOGO SIZE HERE */
+    width: auto;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    /* Add transition for hover effect */
+}
+
+
+/* --- ADDED HOVER EFFECT --- */
+
+header .logo-title img:hover {
+    transform: scale(2.0);
+    /* Increase size by 100% */
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+    /* Add a white glow */
+    cursor: pointer;
+    /* Change cursor to indicate it's interactive */
+}
+
+
+/* --- END HOVER EFFECT --- */
+
+header .logo-title h1 {
+    font-size: 1.8rem;
+    /* Adjust title size */
+    color: white;
+    /* Ensure title is white */
+    margin: 0;
+    /* Remove default margin */
+}
+
+nav {
+    align-self: center;
+    /* Vertically center the nav within the header space */
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    /* Adjust spacing */
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    /* Make nav links bold */
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #d4f8d4;
+    /* Lighter green */
+}
+
+
+/* Specific styling for login/logout button if needed */
+
+#authSection a,
+#authSection button {
+    /* Add specific styles if different from other nav links */
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    background: transparent;
+    border: none;
+    padding: 5px 8px;
+    cursor: pointer;
+}
+
+.logout-btn {
+    /* Style from index.html, ensure it's here */
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    /* Match nav link size */
+    font-weight: bold;
+    transition: background 0.3s ease;
+    margin-left: 10px;
+    /* Add some space if needed */
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+}
+
+.nav-user-section {
+    /* Style from index.html */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-name {
+    /* Style from index.html */
+    color: white;
+    font-weight: 500;
+}
+
+
+/* Layout (General container if needed, otherwise specific page layouts apply) */
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px;
+}
+
+.left,
+.middle,
+.right {
+    flex: 1;
+    min-width: 280px;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    /* Add margin between sections */
+}
+
+
+/* Quote Section */
+
+.quote-section img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+blockquote {
+    font-size: 1.2rem;
+    color: #388e3c;
+    text-align: center;
+    font-style: italic;
+    margin: 20px 0;
+    /* Add margin around quote */
+}
+
+
+/* Customized Plan (Potentially within .middle) */
+
+section {
+    /* Generic section styling, might be overridden */
+    margin-top: 20px;
+}
+
+section form input[type="number"],
+section form select {
+    /* Style select dropdowns too */
+    width: 100%;
+    /* Make inputs/selects fill container */
+    padding: 10px;
+    margin-top: 5px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    /* Include padding/border in width */
+}
+
+
+/* Button Styling (General) */
+
+button {
+    padding: 10px 15px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+
+/* Footer */
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #388e3c;
+    color: white;
+    margin-top: 20px;
+}
+
+footer a {
+    color: #d4f8d4;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+
+/* Diet Options Section (image cards) */
+
+.diet-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.diet-option {
+    width: 160px;
+    text-align: center;
+    padding: 12px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+    display: flex;
+    /* Use flex for internal alignment */
+    flex-direction: column;
+    min-height: 240px;
+    /* Ensure consistent height */
+}
+
+.diet-option:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.diet-option input[type="radio"],
+.diet-option input[type="checkbox"] {
+    display: none;
+}
+
+.diet-option img {
+    width: 100px;
+    /* Fixed size */
+    height: 100px;
+    object-fit: cover;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    align-self: center;
+    /* Center image within flex column */
+}
+
+.diet-option span {
+    /* Diet Name */
+    font-size: 0.95rem;
+    color: #333;
+    display: block;
+    min-height: 40px;
+    /* Allow space for 2 lines */
+    margin-top: 5px;
+}
+
+.diet-option input[type="checkbox"]:checked+img {
+    border: 3px solid #4caf50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.diet-option input[type="checkbox"]:checked~span {
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+.know-more {
+    margin-top: auto;
+    /* Push button to bottom */
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    background: #4caf50;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    border: none;
+    /* Ensure no border */
+    align-self: center;
+    /* Center button */
+}
+
+.know-more:hover {
+    background: #388e3c;
+}
+
+.diet-info {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #444;
+    background: #f4f4f4;
+    padding: 8px;
+    border-radius: 8px;
+    width: calc(100% - 16px);
+    box-sizing: border-box;
+    align-self: center;
+    /* Center info box */
+}
+
+
+/* ==========================================
+STYLES FOR DETAILS & SUMMARY (Index Page)
+==========================================
+*/
+
+.details-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin: 30px auto;
+    max-width: 1000px;
+}
+
+.details-card {
+    flex: 1;
+    min-width: 280px;
+    max-width: 420px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.details-card h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #2e7d32;
+}
+
+.details-card label {
+    font-weight: 600;
+    margin-top: 10px;
+    /* Increased spacing */
+    display: block;
+    color: #333;
+}
+
+
+/* Consistent Button Styling (as used in index.html) */
+
+.btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    background-color: #45a049;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn[style*="#6c757d"] {
+    /* Style for "Set Manually" button */
+    background-color: #6c757d !important;
+}
+
+.btn[style*="#6c757d"]:hover {
+    background-color: #5a6268 !important;
+}
+
+#main-calc-btn {
+    /* Center the main calculate button */
+    display: block;
+    margin: 20px auto;
+}
+
+
+/* Summary Cards Container (index.html) */
+
+.summary-container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.summary-title {
+    font-size: 1.8rem;
+    color: #2e7d32;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+.user-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.info-card {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e8e8e8;
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.info-value {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #2e7d32;
+    margin-bottom: 5px;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #555;
+    margin: 0;
+}
+
+.info-card-full {
+    /* Style for full-width card */
+    flex-basis: 100%;
+}
+
+
+/* ==========================================
+VIDEO SECTION STYLES (Index Page - .right div)
+==========================================
+*/
+
+.video-container {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.video-item {
+    flex: 1;
+    min-width: 250px;
+}
+
+.video-item h3 {
+    font-size: 1.1rem;
+    color: #388e3c;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.video-item iframe {
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Diet Planner</title>
+    <style>
+        /* Basic Reset & Body Style */
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Example font */
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        section {
+            padding: 80px 20px;
+            /* Base padding */
+            min-height: 50vh;
+            /* Minimum height for sections */
+        }
+        
+        .content-wrapper {
+            max-width: 1100px;
+            /* Max width for content */
+            margin: 0 auto;
+            /* Center content */
+            text-align: center;
+        }
+        
+        h1,
+        h2 {
+            color: #2e7d32;
+            /* Primary green */
+        }
+        /* --- UPDATED HEADER STYLES --- */
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            /* align-items: center; */
+            /* <-- REMOVE or COMMENT OUT this line */
+            padding: 10px 40px;
+            /* Adjust top/bottom padding as needed */
+            background: #4caf50;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            /* Optionally set a fixed height if removing align-items doesn't work as desired */
+            /* height: 70px; */
+        }
+        
+        header .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            /* Space between logo and title */
+        }
+        
+        header .logo-title img {
+            height: 60px;
+            /* CONTROL LOGO SIZE HERE */
+            width: auto;
+            display: block;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            /* Add transition for hover effect */
+        }
+        /* --- ADDED HOVER EFFECT --- */
+        
+        header .logo-title img:hover {
+            transform: scale(2.0);
+            /* Increase size by 100% */
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+            /* Add a white glow */
+            cursor: pointer;
+            /* Change cursor to indicate it's interactive */
+        }
+        /* --- END HOVER EFFECT --- */
+        
+        header .logo-title h1 {
+            font-size: 1.8rem;
+            /* Adjust title size */
+            color: white;
+            /* Ensure title is white */
+            margin: 0;
+            /* Remove default margin */
+        }
+        
+        nav {
+            align-self: center;
+            /* Vertically center the nav within the header space */
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            /* Spacing between nav items */
+            margin: 0;
+            padding: 0;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+            padding: 8px 0px;
+            /* Padding for hover effect */
+        }
+        
+        nav a:hover {
+            color: #d4f8d4;
+            /* Lighter green on hover */
+        }
+        /* --- END OF UPDATED HEADER STYLES --- */
+        /* --- UPDATED HERO SECTION STYLES --- */
+        
+        #hero {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            /* Light green gradient */
+            display: flex;
+            flex-direction: column;
+            /* Stack elements vertically */
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 100vh;
+            padding-top: 80px;
+            /* Account for fixed header */
+            box-sizing: border-box;
+        }
+        /* Container for Hero Logo + Title */
+        
+        .hero-title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            /* Space between logo and title */
+            margin-bottom: 15px;
+        }
+        
+        .hero-logo {
+            width: 350px;
+            /* Size of the large logo */
+            height: 350px;
+            /* Add more styling if needed, e.g., background */
+        }
+        
+        .hero-content .website-name {
+            font-size: 4rem;
+            /* Main title size */
+            margin: 0;
+            /* Remove default margins */
+            font-weight: 700;
+            color: #1b5e20;
+            /* Darker green */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-content .tagline {
+            font-size: 1.5rem;
+            color: #2e7d32;
+            /* Primary green */
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            /* Green gradient */
+            color: white;
+            padding: 18px 40px;
+            /* Button size */
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 50px;
+            /* Pill shape */
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+        /* --- END OF UPDATED HERO STYLES --- */
+        /* --- UPDATED IMPORTANCE SECTION STYLES --- */
+        
+        #importance {
+            background-color: #ffffff;
+            /* White background */
+            padding-top: 100px;
+            /* Padding below header */
+        }
+        
+        #importance h2 {
+            margin-bottom: 50px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            /* Center the main title */
+        }
+        /* Grid layout for text and image */
+        
+        .importance-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* Two equal columns */
+            gap: 60px;
+            /* Space between text and image */
+            align-items: center;
+            /* Vertically align items */
+            text-align: left;
+            /* Align text left */
+        }
+        
+        .info-text p {
+            font-size: 1.1rem;
+            /* Text size */
+            color: #444;
+            /* Slightly darker text */
+            line-height: 1.8;
+            /* Improve readability */
+            margin-bottom: 20px;
+        }
+        
+        .info-text strong {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+        
+        .info-image-placeholder {
+            width: 100%;
+            height: 400px;
+            /* Adjust height as needed */
+            background: #e8f5e9;
+            /* Light green placeholder */
+            border-radius: 15px;
+            /* Rounded corners */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #66bb6a;
+            /* Medium green icon/text */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        /* Simple text placeholder, replace with img tag if using image */
+        
+        .info-image-placeholder::before {
+            content: '🥦🥕 Plate Image Here';
+        }
+        /* --- END OF UPDATED IMPORTANCE STYLES --- */
+        /* Reviews Section Styles */
+        
+        #reviews {
+            background: linear-gradient(135deg, #f1f8f4 0%, #e8f5e9 100%);
+            /* Light green gradient */
+            padding-top: 100px;
+            /* Padding below header */
+        }
+        
+        #reviews h2 {
+            margin-bottom: 60px;
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            /* Center title */
+        }
+        
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            /* Responsive columns */
+            gap: 30px;
+            /* Space between review cards */
+        }
+        
+        .review-item {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4caf50;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .review-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .review-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 3px solid #e8f5e9;
+            /* Light border */
+        }
+        
+        .reviewer-info cite {
+            font-weight: 600;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+            font-style: normal;
+            font-size: 1.1rem;
+        }
+        
+        .stars {
+            color: #ffc107;
+            /* Gold stars */
+            font-size: 1.2rem;
+        }
+        
+        .review-item blockquote {
+            margin: 0;
+            font-style: italic;
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            flex-grow: 1;
+            /* Ensure quote takes space */
+        }
+        /* Footer */
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            /* Dark green gradient */
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+        /* Responsive Design Adjustments */
+        
+        @media (max-width: 900px) {
+            /* Adjust breakpoint if needed */
+            .importance-content {
+                grid-template-columns: 1fr;
+                /* Stack text and image */
+            }
+            .info-image-placeholder {
+                height: 300px;
+                /* Adjust image height */
+                margin-top: 30px;
+                /* Add space when stacked */
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                /* Stack logo and nav */
+                padding: 15px 20px;
+            }
+            nav ul {
+                margin-top: 15px;
+                /* Space when stacked */
+                gap: 15px;
+            }
+            .hero-title-container {
+                flex-direction: column;
+                /* Stack logo and title */
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .hero-logo {
+                width: 60px;
+                height: 60px;
+            }
+            .hero-content .website-name {
+                font-size: 3rem;
+                /* Smaller title on mobile */
+            }
+            .hero-content .tagline {
+                font-size: 1.2rem;
+                /* Smaller tagline */
+            }
+            .cta-button {
+                padding: 15px 30px;
+                font-size: 1.1rem;
+            }
+            section {
+                padding: 60px 15px;
+                /* Reduce padding on smaller screens */
+            }
+            #importance h2,
+            #reviews h2 {
+                font-size: 2.2rem;
+                /* Smaller section titles */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-title">
+            <img src="image/logo.png" alt="Logo" width="50" height="50">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#hero">Home</a></li>
+                <li><a href="#importance">Why Healthy?</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="login.html">Planner</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <div class="hero-content">
+            <div class="hero-title-container">
+                <img src="image/logo.png" alt="Diet Planner Logo" class="hero-logo">
+                <h1 class="website-name">Diet Planner</h1>
+            </div>
+            <p class="tagline">Unlock Your Healthiest Self. Personalized Plans Just For You.</p>
+            <a href="login.html" class="cta-button">Start Your Journey Today!</a>
+        </div>
+    </section>
+
+    <section id="importance">
+        <div class="content-wrapper">
+            <h2>Fuel Your Body, Transform Your Life 🥗</h2>
+            <div class="importance-content">
+                <div class="info-text">
+                    <p>
+                        Think of your body as a high-performance machine. What fuel are you giving it? Eating a balanced diet isn't just about rules; it's about <strong>empowering yourself</strong> with the vital energy, strength, and nutrients needed
+                        to thrive! Every bite is a choice – a choice to fuel your potential.
+                    </p>
+                    <p>
+                        Imagine feeling more <strong>energetic</strong>, thinking <strong>clearer</strong>, and building <strong>resilience</strong> against illness. A wholesome diet makes this possible! It's your shield against chronic diseases, the
+                        foundation for strong bones, a booster for your immune system, and even a key to a brighter mood. Let our Diet Planner be your guide to crafting delicious, sustainable habits that fit <em>your</em> life and unlock the incredible
+                        benefits waiting for you. <strong>Your health journey starts now!</strong>
+                    </p>
+                </div>
+                <img src="image/bowl.jpg" alt="Healthy Plate" class="info-image-placeholder">
+            </div>
+        </div>
+    </section>
+
+    <section id="reviews">
+        <div class="content-wrapper">
+            <h2>Real People, Real Results 💬</h2>
+            <div class="review-grid">
+                <div class="review-item">
+                    <div class="review-header">
+                        <img src="image/alex.png" alt="Profile picture of Alex P." class="profile-pic">
+                        <div class="reviewer-info">
+                            <cite>Alex P.</cite>
+                            <div class="stars">★★★★★</div>
+                        </div>
+                    </div>
+                    <blockquote>
+                        "Using Diet Planner made it so easy to track my meals and finally reach my weight goal. Highly recommend!"
+                    </blockquote>
+                </div>
+                <div class="review-item">
+                    <div class="review-header">
+                        <img src="image/srisha.jpg" alt="Profile picture of Srisha P." class="profile-pic">
+                        <div class="reviewer-info">
+                            <cite>Srisha P.</cite>
+                            <div class="stars">★★★★☆</div>
+                        </div>
+                    </div>
+                    <blockquote>
+                        "I love the personalized plans! It took the guesswork out of eating healthy for my busy schedule."
+                    </blockquote>
+                </div>
+                <div class="review-item">
+                    <div class="review-header">
+                        <img src="image/michael.png" alt="Profile picture of Michael B." class="profile-pic">
+                        <div class="reviewer-info">
+                            <cite>Michael B.</cite>
+                            <div class="stars">★★★★★</div>
+                        </div>
+                    </div>
+                    <blockquote>
+                        "The recipes are delicious and simple. I never knew healthy eating could be this enjoyable."
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Diet Planner. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>
